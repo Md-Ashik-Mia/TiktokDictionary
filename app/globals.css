@@ -1,26 +1,50 @@
 @import "tailwindcss";
+@import "tailwindcss/utilities";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@font-face {
+  font-family: "GRIFTER";
+  src: url("/fonts/grifterbold.otf") format("opentype");
+  font-style: normal;
+  font-display: swap;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Design tokens */
+@theme {
+  /* Colors */
+  --color-brand-light: #90c0f8;
+  --color-brand-mid: #62a2ec;
+  --color-brand-dark: #00336e;
+
+  /* Shadows */
+  --shadow-card: 0 18px 40px rgba(0, 0, 0, 0.08);
+
+  /* Radii */
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+
+  /* Fonts */
+  --font-sans: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-display: "GRIFTER", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base styles */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-[#f4f6fb] text-brand-dark;
+}
+
+/* Hero background gradient */
+.hero-gradient {
+  background: radial-gradient(
+    circle at top left,
+    #90c0f8 0,
+    #62a2ec 45%,
+    #62a2ec 100%
+  );
+}
+
+/* Smooth transitions on buttons, cards, etc */
+.interactive {
+  @apply transition-all duration-150 ease-out;
 }
