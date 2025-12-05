@@ -18,11 +18,11 @@ export const FreshSubmissions = () => {
             className="rounded-2xl border border-slate-200 bg-white shadow-card p-5 flex flex-col gap-2"
           >
             <div className="flex items-center gap-2 text-[11px]">
-              <span className="px-2 py-0.5 rounded-full bg-[#3775ca] text-brand-dark ">
+              <span className="px-5 py-2 rounded-full bg-[#F2F4F7] text-brand-dark ">
                 NEW
               </span>
 
-              <span className="px-2 py-0.5 rounded-full bg-[#00336E] text-[#FFFFFF]">
+              <span className="px-5 py-2 rounded-full bg-[#00336E] text-[#FFFFFF]">
                 {i % 2 === 0 ? "Gaming" : "TikTok Trends"}
               </span>
             </div>

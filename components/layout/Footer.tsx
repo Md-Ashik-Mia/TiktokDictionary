@@ -1,29 +1,53 @@
 import Link from "next/link";
+import { FaTiktok, FaInstagram } from "react-icons/fa";
+import { RxTwitterLogo } from "react-icons/rx";
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-[#f5f8ff] mt-20">
-      <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between text-xs text-slate-500">
-        <p>© Copyright 2025. All Rights Reserved</p>
+    <footer className="bg-[#f5f8ff]">
+      <div className="max-w-6xl mx-auto px-6 py-12">
 
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
-          <span>🧠 TikTokDictionary</span>
-          <span className="sm:border-l sm:border-slate-300 sm:pl-4">
-            Found a new term blowing up? Add it to the dictionary with your own
-            definition.
-          </span>
+        {/* Logo + tagline */}
+        <div className="text-center mb-6">
+          <h3 className="flex items-center justify-center gap-2 text-brand-dark font-semibold text-[18px]">
+            📚 TikTokDictionary
+          </h3>
+          <p className="text-[13px] text-slate-600">
+            Found a new term blowing up? Add it to the dictionary with your own definition.
+          </p>
         </div>
 
-        <div className="flex items-center gap-3 text-slate-600">
-          <Link href="#" className="hover:text-brand-dark interactive">
-            TikTok
-          </Link>
-          <Link href="#" className="hover:text-brand-dark interactive">
-            Instagram
-          </Link>
-          <Link href="#" className="hover:text-brand-dark interactive">
-            X
-          </Link>
+        {/* Divider */}
+        <hr className="border-slate-300 mb-6" />
+
+        {/* Bottom row */}
+        <div className="flex items-center justify-between text-sm text-slate-600">
+          {/* Left: Copyright */}
+          <p>© Copyright 2025. All Rights Reserved</p>
+
+          {/* Right: Social icons */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="#"
+              className="w-10 h-10 flex items-center justify-center rounded-full border border-slate-400 hover:bg-slate-200 transition"
+            >
+              <FaTiktok size={18} />
+            </Link>
+
+            <Link
+              href="#"
+              className="w-10 h-10 flex items-center justify-center rounded-full border border-slate-400 hover:bg-slate-200 transition"
+            >
+              <FaInstagram size={18} />
+            </Link>
+
+            <Link
+              href="#"
+              className="w-10 h-10 flex items-center justify-center rounded-full border border-slate-400 hover:bg-slate-200 transition"
+            >
+              <RxTwitterLogo size={18} />
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

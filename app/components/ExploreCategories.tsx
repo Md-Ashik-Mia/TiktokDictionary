@@ -11,13 +11,13 @@ export const ExploreCategories = () => {
   ];
 
   return (
-    <section className="min-h-screen bg-[#e4f0ff] py-16 mt-6">
+    <section className="min-h-screen bg-[#EFF6FE] py-25 mt-6">
       <div className="max-w-6xl mx-auto px-6">
         <h2 className="font-display text-3xl md:text-[2.6rem] text-brand-dark mb-2">
           Explore Categories
         </h2>
 
-        <p className="text-sm text-slate-600 mb-8">
+        <p className="text-[18px] text-[#00336E]  mb-8">
           Definitions voted accurate by the community.
         </p>
 
@@ -25,10 +25,10 @@ export const ExploreCategories = () => {
           {categories.map(([label, count]) => (
             <button
               key={label}
-              className="rounded-2xl bg-white border border-slate-200 shadow-card px-5 py-6 text-left hover:-translate-y-1 hover:shadow-lg transition"
+              className="rounded-2xl bg-white border border-[#00336E] shadow-card px-5 py-6 text-left hover:-translate-y-1 hover:shadow-lg transition"
             >
-              <div className="font-semibold text-brand-dark">{label}</div>
-              <div className="mt-1 text-xs text-slate-500">{count}</div>
+              <div className="font-bold text-2xl text-[#00336E]">{label}</div>
+              <div className="mt-1 text-[18px] text-[#00336E]">{count}</div>
             </button>
           ))}
         </div>

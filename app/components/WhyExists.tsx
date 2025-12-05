@@ -1,44 +1,55 @@
 export const WhyExists = () => {
   return (
-    <>
-      <h2 className="font-display text-3xl md:text-[2.6rem] text-brand-dark mb-3">
-        Why TikTok Dictionary Exists
-      </h2>
+   <div className="lg:w-6xl pt-50">
+    <div className=" flex justify-between items-center gap-11">
 
-      <p className="text-sm text-slate-600 max-w-lg">
-        A community-powered dictionary tracking viral slang and new trends
-        across TikTok and online culture. No ads. No influencers. 100%
-        organic.
-      </p>
+      {/* LEFT COLUMN */}
+      <div>
+        <h2 className="font-display font-bold text-3xl md:text-[2.6rem] text-brand-dark mb-3">
+          Why TikTok <br /> Dictionary Exists
+        </h2>
 
-      <div className="grid gap-4 sm:grid-cols-2 mt-10">
-        <div className="rounded-2xl bg-white shadow-card px-5 py-6">
-          <div className="text-xs uppercase tracking-wide text-slate-500">
-            Words Defined
-          </div>
-          <div className="mt-2 text-3xl font-semibold text-brand-dark">
+        <p className="text-[18px] text-[#00336E] max-w-md leading-relaxed">
+          A community-powered dictionary tracking viral slang and new trends
+          across TikTok and online culture. No ads. No influencers. 100% organic.
+        </p>
+      </div>
+
+      {/* RIGHT COLUMN */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {/* Words Defined */}
+        <div className="rounded-xl bg-[#EFF6FE]  px-6 py-6">
+          <div className="mt-2 text-5xl font-bold text-[#00336E]">
             12k+
           </div>
+          <div className="text-[16px] text-[#00336E] ">
+            Words Defined
+          </div>
+
         </div>
 
-        <div className="rounded-2xl bg-white shadow-card px-5 py-6">
-          <div className="text-xs uppercase tracking-wide text-slate-500">
-            Community Votes
-          </div>
-          <div className="mt-2 text-3xl font-semibold text-brand-dark">
+        {/* Community Votes */}
+        <div className="rounded-xl bg-[#EFF6FE]  px-6 py-6">
+            <div className="mt-2 text-5xl font-bold text-[#00336E]">
             48k+
           </div>
+          <div className=" text-[16px] text-[#00336E]    ">
+            Community Votes
+          </div>
+
         </div>
 
-        <div className="rounded-2xl bg-white shadow-card px-5 py-6 col-span-full">
-          <div className="text-xs uppercase tracking-wide text-slate-500">
+        {/* Live Updates (Full Width) */}
+        <div className=" rounded-xl bg-[#EFF6FE]  px-6 py-6 col-span-full">
+          <div className="text-5xl font-bold uppercase tracking-wide text-[#00336E]">
             Live
           </div>
-          <div className="mt-2 text-2xl font-semibold text-brand-dark">
+          <div className="mt-2 text-[16px] text-[#00336E]">
             Real-Time Updates
           </div>
         </div>
       </div>
-    </>
+    </div>
+   </div>
   );
 };

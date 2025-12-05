@@ -28,7 +28,7 @@ export const MostAgreed = () => {
   ];
 
   return (
-    <div className="min-w-6xl ">
+    <div className="min-w-6xl  ">
       <div className="">
         {/* Heading + description */}
         <h2 className="font-display font-bold text-4xl md:text-[3rem] text-brand-dark">
