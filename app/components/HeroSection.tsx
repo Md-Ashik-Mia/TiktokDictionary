@@ -27,7 +27,6 @@ export const HeroSection = () => {
             <CiSearch className="text-xl text-slate-500" />
           </div>
         </div>
-
         <p className="mt-3 text-[11px] text-slate-600">
           Press <span className="font-semibold">Enter</span> to search
         </p>

@@ -18,22 +18,22 @@ const controversial = [
 export const ControversialSection = () => {
   return (
     <section className="max-w-6xl mx-auto px-6">
-      <h2 className="font-display font-bold text-2xl md:text-[2.2rem] text-[#00336E] mb-8">
+      <h2 className="font-display font-bold !text-5xl md:text-[2.2rem] text-[#00336E] mb-8">
         Most Controversial
       </h2>
       <div className="grid gap-6 md:grid-cols-2">
         {controversial.map((item) => (
           <article
             key={item.word}
-            className="rounded-[24px] border border-[#00336E] bg-white p-6 hover:shadow-md transition-all"
+            className=" rounded-[24px] border border-[#00336E] bg-white p-6 hover:shadow-md transition-all"
           >
-            <h3 className="font-display font-bold text-xl text-[#00336E] mb-2">
+            <h3 className="font-display font-bold text-2xl text-[#000000] mb-2">
               {item.word}
             </h3>
-            <p className="text-sm text-[#00336E]/70 mb-4">
+            <p className="text-[16px] text-[#000000] mb-4">
               Reason: {item.reason}
             </p>
-            <div className="flex items-center gap-6 text-sm font-semibold text-[#00336E]">
+            <div className="flex items-center gap-6 text-sm font-bold text-[#000000]">
               <div className="flex items-center gap-1.5">
                 <AiOutlineLike className="text-lg" /> {item.up}
               </div>

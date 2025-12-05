@@ -10,17 +10,17 @@ export const FilterSection = () => {
   const [filter, setFilter] = useState("Slang");
 
   return (
-    <div className="max-w-6xl mx-auto px-6 -mt-8">
-      <div className="flex flex-col md:flex-row gap-6 max-w-4xl mx-auto">
-        <div className="flex-1 flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-[#00336E] ml-1">
+    <div className="max-w-6xl mx-auto px-6">
+      <div className="flex md:flex-row gap-6  ">
+        <div className="flex-1 flex flex-col gap-1.5 relative">
+          <label className="absolute z-50 bg-white -top-1.5 left-1 font-display text-xs font-bold text-[#00336E] ml-1 px-1.5">
             Sort by
           </label>
           <div className="relative">
             <select
               value={timeframe}
               onChange={(e) => setTimeframe(e.target.value as Timeframe)}
-              className="w-full appearance-none bg-white border border-[#00336E] rounded-xl px-4 py-3.5 text-sm text-[#00336E] outline-none cursor-pointer shadow-sm focus:ring-2 focus:ring-[#00336E]/10"
+              className="w-full appearance-none bg-white border border-[#00336E] rounded-[15px] px-4 py-3.5 text-sm text-[#00336E] outline-none cursor-pointer shadow-sm focus:ring-2 focus:ring-[#00336E]/10"
             >
               <option value="today">Today</option>
               <option value="week">This Week</option>
@@ -29,16 +29,15 @@ export const FilterSection = () => {
             <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#00336E]" />
           </div>
         </div>
-
-        <div className="flex-1 flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-[#00336E] ml-1">
+        <div className="flex-1 flex flex-col gap-1.5 relative">
+          <label className="absolute z-50 bg-white -top-1.5 left-1 font-display text-xs font-bold text-[#00336E] ml-1 px-1.5">
             Filter by:
           </label>
           <div className="relative">
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="w-full appearance-none bg-white border border-[#00336E] rounded-xl px-4 py-3.5 text-sm text-[#00336E] outline-none cursor-pointer shadow-sm focus:ring-2 focus:ring-[#00336E]/10"
+              className="w-full appearance-none bg-white border border-[#00336E] rounded-[15px] px-4 py-3.5 text-sm text-[#00336E] outline-none cursor-pointer shadow-sm focus:ring-2 focus:ring-[#00336E]/10"
             >
               <option>Slang</option>
               <option>TikTok Trends</option>

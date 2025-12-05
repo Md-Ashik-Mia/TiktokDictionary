@@ -24,7 +24,7 @@ export const SubcultureSection = () => {
 
   return (
     <section className="max-w-6xl mx-auto px-6">
-      <h2 className="font-display font-bold text-2xl md:text-[2.2rem] text-[#00336E] mb-6">
+      <h2 className="font-display font-bold !text-5xl md:text-[2.2rem] text-[#00336E] mb-6">
         Subculture Words
       </h2>
 
@@ -33,7 +33,7 @@ export const SubcultureSection = () => {
           <button
             key={item}
             onClick={() => setSubcultureFilter(item)}
-            className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
+            className={`px-5 py-2 rounded-full text-[16px] font-bold transition-all ${
               subcultureFilter === item
                 ? "bg-[#00336E] text-white border border-[#00336E]"
                 : "bg-slate-100 text-[#00336E] border border-transparent hover:bg-slate-200"
@@ -50,11 +50,11 @@ export const SubcultureSection = () => {
             key={item.word}
             className="rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col justify-between h-[140px] hover:shadow-md transition-all"
           >
-            <h3 className="font-display font-bold text-lg text-[#00336E]">
+            <h3 className="font-display font-bold text-2xl text-[#000000]">
               {item.word}
             </h3>
             <div>
-              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 uppercase tracking-wide">
+              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#00336E0D] text-[#769ECC] uppercase tracking-wide">
                 {item.tag}
               </span>
             </div>
