@@ -36,10 +36,9 @@ body {
 
 /* Hero background gradient */
 .hero-gradient {
-  background: radial-gradient(
-    circle at top left,
+  background: linear-gradient(
+    to bottom right,
     #90c0f8 0,
-    #62a2ec 45%,
     #62a2ec 100%
   );
 }

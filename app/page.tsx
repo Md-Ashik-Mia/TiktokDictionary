@@ -25,11 +25,11 @@ export default function HomePage() {
       </section>
       </div>
 
-      <section className="max-w-6xl min-h-screen mx-auto px-6 py-12">
+      <section className="max-w-6xl min-h-screen mx-auto px-6 py-12 mt-50">
         <FreshSubmissions />
       </section>
       <ExploreCategories />
-      <section className="max-w-6xl min-h-screen mx-auto">
+      <section className="max-w-6xl min-h-screen mx-auto ">
         <WhyExists />
       </section>
       <SubmitCTA />

@@ -31,11 +31,11 @@ export const MostAgreed = () => {
     <div className="min-w-6xl  ">
       <div className="">
         {/* Heading + description */}
-        <h2 className="font-display font-bold text-4xl md:text-[3rem] text-brand-dark">
+        <h2 className="font-display font-bold lg:text-6xl md:text-[3.2rem] leading-none text-[#00336E]">
           Most Agreed Definitions
         </h2>
 
-        <p className="text-sm text-slate-600 mt-1 mb-6">
+        <p className="my-4 font-sans text-lg text-[#00336E]">
           Definitions voted accurate by the community.
         </p>
 
@@ -44,12 +44,12 @@ export const MostAgreed = () => {
           {items.map((item) => (
             <article
               key={item.label}
-              className="w-full rounded-2xl bg-white shadow-card px-6 py-5 border border-slate-200 flex flex-col md:flex-row justify-between gap-4"
+              className="w-full rounded-2xl bg-white shadow-card px-6 py-5 border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4"
             >
               {/* LEFT */}
               <div className="max-w-2xl">
                 <div className="flex items-center gap-3">
-                  <h3 className="font-bold text-2xl text-brand-dark">
+                  <h3 className="font-bold text-2xl text-[#00336E]">
                     {item.label}
                   </h3>
                   <span className="text-[12px] px-3 py-0.5 rounded-full bg-[#C5FFC9] text-[#29AA32] border
@@ -58,22 +58,23 @@ export const MostAgreed = () => {
                   </span>
                 </div>
 
-                <p className="mt-2 text-[12px] text-slate-600 ">
+                <p className="mt-2 text-[18px] text-[#00336E]">
                   {item.description}
                 </p>
 
-                <p className="mt-2 text-[12px] text-slate-600">
+                <p className="mt-2 text-[16px] text-[#000000] font-bold">
                   <AiOutlineLike className="inline mr-1" /> {item.votes.toLocaleString()} agreed
                 </p>
               </div>
 
               {/* RIGHT */}
-              <div className="flex flex-col items-end min-w-[100px]">
-                <span className="text-[11px] uppercase text-slate-500 tracking-wide">
-                  accuracy
-                </span>
-                <span className="text-3xl font-bold text-brand-dark">
+              <div className="flex flex-col  min-w-[128px] min-h-[104px] bg-[#F2F4F7] p-6 rounded-lg">
+
+                <span className="font-display text-4xl font-bold text-[#00336E]">
                   {item.accuracy}%
+                </span>
+                <span className="text-[12px]  text-center  tracking-wide">
+                  accuracy
                 </span>
               </div>
             </article>

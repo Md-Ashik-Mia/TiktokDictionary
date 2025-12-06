@@ -79,11 +79,11 @@ export const TrendingSection = () => {
   return (
     <div className="w-full">
       {/* Heading + description (LEFT aligned) */}
-      <h2 className="font-display font-bold text-[2.8rem] md:text-[3.2rem] leading-none text-brand-dark">
+      <h2 className="font-display font-bold lg:text-6xl md:text-[3.2rem] leading-none text-[#00336E]">
         Trending Right Now
       </h2>
 
-      <p className="mt-2 font-sans text-sm text-slate-600">
+      <p className="mt-2 font-sans text-lg text-[#00336E]">
         Choose the correct meaning and discover new words instantly.
       </p>
 
@@ -95,8 +95,8 @@ export const TrendingSection = () => {
             onClick={() => setActiveTab(tab.key)}
             className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
               activeTab === tab.key
-                ? "bg-brand-dark text-white shadow-md"
-                : "bg-slate-100 text-brand-dark hover:bg-slate-200"
+                ? "bg-[#00336E] text-white shadow-md"
+                : "bg-slate-100 text-[#00336E] hover:bg-slate-200"
             }`}
           >
             {tab.label}
@@ -109,32 +109,32 @@ export const TrendingSection = () => {
         {filteredData.map((item) => (
           <article
             key={item.word}
-            className="w-full rounded-2xl border border-brand-dark/30 bg-white px-6 py-5 shadow-sm hover:shadow-md transition-all"
+            className=" h-44 rounded-2xl p-2 border border-[#00336E] bg-white  shadow-sm hover:shadow-md transition-all"
           >
             {/* word + rank */}
-            <header className="mb-3 flex items-start justify-between">
-              <h3 className="font-display text-[1.1rem] font-semibold text-brand-dark capitalize">
+            <header className=" flex items-start justify-between mb-1.5">
+              <h3 className="font-display lg:text-2xl font-semibold text-[#000000] capitalize">
                 {item.word}
               </h3>
-              <span className="text-sm font-display font-bold text-brand-dark">
+              <span className="text-2xl font-display font-bold text-[#000000]">
                 #{item.rank}
               </span>
             </header>
 
             {/* category pill */}
-            <span className="inline-block rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-brand-dark/80">
+            <span className="inline-block mb-1.5 rounded-full  px-2 py-0.5  bg-slate-100  text-[12px] font-medium text-[#769ECC]">
               {item.category}
             </span>
 
             {/* definition */}
-            <p className="mt-3 text-sm leading-relaxed text-brand-dark/90">
+            <p className=" text-[16px]  text-[#00336E]">
               {item.definition}
             </p>
 
             {/* likes */}
-            <footer className="mt-4 flex items-center gap-1 text-brand-dark">
-              <AiOutlineLike className="text-[16px]" />
-              <span className="text-[13px] font-medium">
+            <footer className=" font-bold flex items-center gap-1 text-[#000000]">
+              <AiOutlineLike className="text-[16px] font-bold " />
+              <span className="text-[16px] font-bold">
                 {item.likes.toLocaleString()} agreed
               </span>
             </footer>
