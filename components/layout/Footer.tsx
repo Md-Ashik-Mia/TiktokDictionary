@@ -12,8 +12,8 @@ export function Footer() {
           <h3 className="flex items-center justify-center gap-2 text-brand-dark font-semibold text-[18px]">
             📚 TikTokDictionary
           </h3>
-          <p className="text-[13px] text-slate-600">
-            Found a new term blowing up? Add it to the dictionary with your own definition.
+          <p className="text-[16px] text-[#535353]">
+            Found a new term blowing up? Add it to the <br /> dictionary with your own definition.
           </p>
         </div>
 
@@ -21,7 +21,7 @@ export function Footer() {
         <hr className="border-slate-300 mb-6" />
 
         {/* Bottom row */}
-        <div className="flex items-center justify-between text-sm text-slate-600">
+        <div className="flex items-center justify-between text-sm text-[#000000]">
           {/* Left: Copyright */}
           <p>© Copyright 2025. All Rights Reserved</p>
 

@@ -7,7 +7,7 @@ export function Navbar() {
       <Link href="/" className="text-2xl font-semibold text-black">
         <span className="text-white ">TikTok</span>Dictionary
       </Link>
-      <Button size="sm" className="rounded-full">
+      <Button className="rounded-full text-lg font-sans">
         Login
       </Button>
     </header>
