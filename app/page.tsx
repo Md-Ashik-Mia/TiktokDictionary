@@ -19,7 +19,7 @@ export default function HomePage() {
         <TrendingSection />
       </section>
 
-      <div className="bg-[#EFF6FE]">
+      {/* <div className="bg-[#EFF6FE]">
         <section className="max-w-6xl min-h-screen mx-auto mt-30 bg-[#EFF6FE]  ">
         <MostAgreed />
       </section>
@@ -31,7 +31,7 @@ export default function HomePage() {
       <ExploreCategories />
       <section className="max-w-6xl min-h-screen mx-auto ">
         <WhyExists />
-      </section>
+      </section> */}
       <SubmitCTA />
 
       <Footer />

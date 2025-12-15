@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 
 export function Navbar() {
   return (
@@ -7,6 +7,11 @@ export function Navbar() {
       <Link href="/" className="text-2xl font-semibold text-black">
         <span className="text-white ">TikTok</span>Dictionary
       </Link>
+      <div className="flex justify-around gap-9">
+        <Link href="/discover">Discover</Link>
+        <Link href="/word/rizz">Word Details</Link>
+        <Link href="/submit">Submit</Link>
+      </div>
       <Button className="rounded-full text-lg font-sans">
         Login
       </Button>
