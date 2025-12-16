@@ -12,9 +12,11 @@ export function Navbar() {
         <Link href="/word/rizz">Word Details</Link>
         <Link href="/submit">Submit</Link>
       </div>
-      <Button className="rounded-full text-lg font-sans">
-        Login
-      </Button>
+      <Link href="/login">
+        <Button className="rounded-full text-lg font-sans">
+          Login
+        </Button>
+      </Link>
     </header>
   );
 }
