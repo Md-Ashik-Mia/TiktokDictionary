@@ -1,20 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { api } from "@/lib/https";
+import { useEffect, useMemo, useState } from "react";
 import { AiOutlineLike } from "react-icons/ai";
 
-export const TrendingSection = () => {
-  const [activeTab, setActiveTab] = useState<"today" | "week" | "month">(
-    "today"
-  );
+type TrendingTab = "today" | "week" | "month";
 
-  const tabs = [
-    { key: "today" as const, label: "Today" },
-    { key: "week" as const, label: "This Week" },
-    { key: "month" as const, label: "This Month" },
-  ];
+type TrendingCard = {
+  word: string;
+  rank: number;
+  category: string;
+  definition: string;
+  likes: number;
+  period: TrendingTab;
+};
 
-  const trendingData =[
+type TrendingApiItem = {
+  total_likes?: number;
+  definitions?: Record<string, number>;
+};
+
+type TrendingApiResponse = Record<string, TrendingApiItem>;
+
+function pickTopDefinition(definitions?: Record<string, number>) {
+  const entries = Object.entries(definitions ?? {});
+  if (entries.length === 0) return "";
+  entries.sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
+  return entries[0]?.[0] ?? "";
+}
+
+const TRENDING_FALLBACK_DATA: TrendingCard[] =[
   {
     word: "delulu",
     rank: 1,
@@ -259,145 +274,145 @@ export const TrendingSection = () => {
     word: "POV",
     rank: 31,
     category: "TikTok Trends",
-    definition: "Point of view content style.",
-    likes: 1334,
+    definition: "Point of view, used to frame a scenario.",
+    likes: 1032,
     period: "today",
   },
   {
-    word: "era",
+    word: "drip",
     rank: 32,
-    category: "Social Media",
-    definition: "A phase or period in life.",
-    likes: 972,
-    period: "today",
+    category: "Fashion",
+    definition: "Stylish outfit or appearance.",
+    likes: 822,
+    period: "week",
   },
   {
-    word: "cancelled",
+    word: "cap",
     rank: 33,
-    category: "Internet Culture",
-    definition: "Facing backlash for actions or statements.",
-    likes: 589,
-    period: "month",
-  },
-  {
-    word: "flex",
-    rank: 34,
     category: "Slang",
-    definition: "Showing off something.",
-    likes: 743,
+    definition: "A lie or falsehood.",
+    likes: 690,
     period: "week",
   },
   {
     word: "glow up",
-    rank: 35,
-    category: "Slang",
-    definition: "Major improvement in appearance or life.",
-    likes: 1169,
-    period: "month",
-  },
-  {
-    word: "brainrot",
-    rank: 36,
-    category: "Memes",
-    definition: "Overconsumption of repetitive content.",
-    likes: 921,
-    period: "today",
-  },
-  {
-    word: "touch grass",
-    rank: 37,
-    category: "Memes",
-    definition: "Go outside and disconnect from the internet.",
-    likes: 884,
-    period: "week",
-  },
-  {
-    word: "real",
-    rank: 38,
-    category: "Slang",
-    definition: "Relatable or true.",
-    likes: 1021,
-    period: "today",
-  },
-  {
-    word: "manifest",
-    rank: 39,
+    rank: 34,
     category: "Internet Culture",
-    definition: "Believing something into existence.",
-    likes: 697,
+    definition: "A transformation for the better.",
+    likes: 905,
     period: "month",
   },
   {
-    word: "gatekeep",
-    rank: 40,
-    category: "Social Media",
-    definition: "Keeping information exclusive.",
-    likes: 623,
+    word: "red flag",
+    rank: 35,
+    category: "Dating",
+    definition: "A warning sign in behavior.",
+    likes: 864,
     period: "month",
+  },
+  {
+    word: "green flag",
+    rank: 36,
+    category: "Dating",
+    definition: "A positive sign in behavior.",
+    likes: 798,
+    period: "month",
+  },
+  {
+    word: "periodt",
+    rank: 37,
+    category: "Slang",
+    definition: "Emphasis that a statement is final.",
+    likes: 979,
+    period: "today",
   },
   {
     word: "bestie",
-    rank: 41,
+    rank: 38,
     category: "Slang",
-    definition: "Close friend.",
-    likes: 811,
+    definition: "A close friend.",
+    likes: 711,
     period: "week",
   },
   {
-    word: "iykyk",
+    word: "tea",
+    rank: 39,
+    category: "Slang",
+    definition: "Gossip or juicy information.",
+    likes: 1003,
+    period: "today",
+  },
+  {
+    word: "stan",
+    rank: 40,
+    category: "Internet Culture",
+    definition: "An overzealous fan.",
+    likes: 752,
+    period: "month",
+  },
+  {
+    word: "FYP",
+    rank: 41,
+    category: "TikTok",
+    definition: "For You Page.",
+    likes: 1122,
+    period: "today",
+  },
+  {
+    word: "mood",
     rank: 42,
     category: "Slang",
-    definition: "If you know, you know.",
-    likes: 702,
+    definition: "Relatable feeling.",
+    likes: 677,
     period: "week",
   },
   {
-    word: "fr",
+    word: "hits different",
     rank: 43,
     category: "Slang",
-    definition: "For real.",
-    likes: 856,
-    period: "today",
+    definition: "Feels unique or more impactful.",
+    likes: 890,
+    period: "month",
   },
   {
-    word: "cringe",
+    word: "cheugy",
     rank: 44,
     category: "Slang",
-    definition: "Embarrassing or awkward.",
-    likes: 933,
-    period: "week",
-  },
-  {
-    word: "vibes",
-    rank: 45,
-    category: "Internet Culture",
-    definition: "General feeling or mood.",
-    likes: 781,
+    definition: "Out of date or trying too hard.",
+    likes: 540,
     period: "month",
   },
   {
-    word: "caught in 4k",
-    rank: 46,
-    category: "Memes",
-    definition: "Caught with undeniable evidence.",
-    likes: 674,
-    period: "week",
-  },
-  {
-    word: "drip",
-    rank: 47,
+    word: "shook",
+    rank: 45,
     category: "Slang",
-    definition: "Stylish outfit or appearance.",
-    likes: 919,
+    definition: "Surprised or shocked.",
+    likes: 966,
     period: "today",
   },
   {
-    word: "sending",
+    word: "flex",
+    rank: 46,
+    category: "Slang",
+    definition: "To show off.",
+    likes: 705,
+    period: "week",
+  },
+  {
+    word: "GOAT",
+    rank: 47,
+    category: "Internet Culture",
+    definition: "Greatest of all time.",
+    likes: 1204,
+    period: "today",
+  },
+  {
+    word: "W",
     rank: 48,
     category: "Slang",
-    definition: "Something extremely funny.",
-    likes: 566,
-    period: "month",
+    definition: "A win or success.",
+    likes: 1135,
+    period: "today",
   },
   {
     word: "energy",
@@ -417,11 +432,68 @@ export const TrendingSection = () => {
   },
 ];
 
+export const TrendingSection = () => {
+  const [activeTab, setActiveTab] = useState<TrendingTab>("today");
+  const [remoteByTab, setRemoteByTab] = useState<
+    Partial<Record<TrendingTab, TrendingCard[]>>
+  >({});
+
+  const tabs = [
+    { key: "today" as const, label: "Today" },
+    { key: "week" as const, label: "This Week" },
+    { key: "month" as const, label: "This Month" },
+  ];
+
+  const fallbackByTab = useMemo(() => {
+    return activeTab === "month"
+      ? TRENDING_FALLBACK_DATA
+      : TRENDING_FALLBACK_DATA.filter((item) => item.period === activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    const day = activeTab === "today" ? "1" : activeTab === "week" ? "7" : "30";
+    const controller = new AbortController();
+
+    async function load() {
+      try {
+        const res = await api.post<TrendingApiResponse>(
+          "dictionary/trendingwords/",
+          { day },
+          { signal: controller.signal }
+        );
+
+        const entries = Object.entries(res.data ?? {});
+        const cards = entries
+          .map(([word, data]) => {
+            const likes = Number(data?.total_likes ?? 0);
+            const definition = pickTopDefinition(data?.definitions);
+            return {
+              word,
+              rank: 0,
+              category: "Trending",
+              definition,
+              likes,
+              period: activeTab,
+            } satisfies TrendingCard;
+          })
+          .sort((a, b) => b.likes - a.likes)
+          .map((item, idx) => ({ ...item, rank: idx + 1 }));
+
+        setRemoteByTab((prev) => ({ ...prev, [activeTab]: cards }));
+      } catch {
+        if (controller.signal.aborted) return;
+        setRemoteByTab((prev) => ({ ...prev, [activeTab]: prev[activeTab] ?? [] }));
+      }
+    }
+
+    load();
+    return () => controller.abort();
+  }, [activeTab]);
 
   const filteredData =
-    activeTab === "month"
-      ? trendingData
-      : trendingData.filter((item) => item.period === activeTab);
+    (remoteByTab[activeTab] && remoteByTab[activeTab]!.length > 0
+      ? remoteByTab[activeTab]!
+      : fallbackByTab) ?? [];
 
   return (
     <div className="w-full">

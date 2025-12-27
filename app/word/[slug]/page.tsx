@@ -1,23 +1,97 @@
 
 "use client";
 
+import { SubmitCTA } from "@/components/common/SubmitCTA";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import React, { useMemo, useState } from "react";
+import { api } from "@/lib/https";
+import { useSearchParams } from "next/navigation";
+import React, { useEffect, useMemo, useState } from "react";
 import { AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
-import { MdInfo } from "react-icons/md";
 import {
   FiChevronRight,
-  FiExternalLink,
-  FiFlag,
-  FiMessageSquare,
-  FiThumbsUp,
   FiX,
 } from "react-icons/fi";
-import { SubmitCTA } from "@/components/common/SubmitCTA";
+import { MdInfo } from "react-icons/md";
 
 type OriginItem = { by: string; date: string };
 type AltDef = { text: string; likes: number; comments: number };
+
+type ApiResponseItem = {
+  id: number;
+  is_like: boolean;
+  is_dislike: boolean;
+  user?: string | number;
+  created_at?: string;
+};
+
+type ApiDefinition = {
+  id: number;
+  definition: string;
+  example_sentence?: string;
+  responses?: ApiResponseItem[];
+  created_at?: string;
+};
+
+type ApiWord = {
+  id: number;
+  word: string;
+  category?: { id: number; name: string };
+  Source?: string;
+  Category_yes?: boolean;
+  total_likes?: number;
+  total_dislikes?: number;
+  duplicate_tag?: boolean;
+  Alternate_spelllings?: string[];
+  Alternate_spellings?: string[];
+  Hashtags?: string[];
+  definitions?: ApiDefinition[];
+  definations?: ApiDefinition[];
+  created_at?: string;
+  first_user?: number | string;
+  username?: string;
+  total_submissions?: number;
+};
+
+type GetWordsResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ApiWord[];
+};
+
+function unwrapWordResponse(data: unknown): ApiWord | null {
+  if (!data || typeof data !== "object") return null;
+  const maybe = data as Record<string, unknown>;
+  const results = maybe.results;
+  if (Array.isArray(results) && results.length > 0) {
+    const first = results[0];
+    if (first && typeof first === "object") return first as ApiWord;
+  }
+  return data as ApiWord;
+}
+
+function countLikesDislikes(def: ApiDefinition) {
+  const responses = def.responses ?? [];
+  let likes = 0;
+  let dislikes = 0;
+  for (const r of responses) {
+    if (r.is_like) likes += 1;
+    if (r.is_dislike) dislikes += 1;
+  }
+  return { likes, dislikes };
+}
+
+function formatShortDate(iso?: string) {
+  if (!iso) return "18 Jul 2025";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "18 Jul 2025";
+  return d.toLocaleDateString(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 const titleCase = (s: string) =>
   s
@@ -30,31 +104,154 @@ export default function WordDetailPage({
 }: {
   params: { slug: string };
 }) {
+  const searchParams = useSearchParams();
   const word = useMemo(
     () => decodeURIComponent(params.slug || "word").replace(/-/g, " "),
     [params.slug]
   );
   const title = useMemo(() => titleCase(word), [word]);
 
+  const [, setLoadingWord] = useState(true);
+  const [wordData, setWordData] = useState<ApiWord | null>(null);
+
   const [meaning, setMeaning] = useState("");
   const [showDupModal, setShowDupModal] = useState(false);
 
-  const altDefs: AltDef[] = [
-    {
-      text: "Game or charisma used to impress someone.",
-      likes: 1120,
-      comments: 90,
-    },
-    { text: "Smooth talking mentality.", likes: 320, comments: 40 },
-    { text: "Flirty confidence energy.", likes: 143, comments: 15 },
-  ];
+  useEffect(() => {
+    let alive = true;
+    const controller = new AbortController();
 
-  const origins: OriginItem[] = [
-    { by: "@username", date: "18 Jul 2025" },
-    { by: "@username", date: "18 Jul 2025" },
-  ];
+    async function fetchById(wordId: number) {
+      const res = await api.post<unknown>(
+        "dictionary/get-words/",
+        { word_id: wordId },
+        { signal: controller.signal }
+      );
+      return unwrapWordResponse(res.data);
+    }
 
-  const related = ["W Rizz", "Skibidi", "Ohio Rizz", "Ohio Rizz"];
+    async function resolveIdBySearch(search: string) {
+      const res = await api.get<GetWordsResponse>("dictionary/get-words/", {
+        params: { search },
+        signal: controller.signal,
+      });
+      const results = res.data?.results ?? [];
+      const exact = results.find(
+        (r) => r.word?.trim().toLowerCase() === search.trim().toLowerCase()
+      );
+      return (exact ?? results[0])?.id;
+    }
+
+    async function load() {
+      try {
+        setLoadingWord(true);
+        const idParam = searchParams?.get("id");
+        const directId = idParam ? Number(idParam) : NaN;
+
+        const wordId = Number.isFinite(directId)
+          ? directId
+          : await resolveIdBySearch(word);
+
+        if (!wordId) {
+          if (!alive) return;
+          setWordData(null);
+          return;
+        }
+
+        const data = await fetchById(wordId);
+        if (!alive) return;
+        setWordData(data);
+      } catch {
+        if (!alive) return;
+        setWordData(null);
+      } finally {
+        if (alive) setLoadingWord(false);
+      }
+    }
+
+    if (word.trim()) load();
+    return () => {
+      alive = false;
+      controller.abort();
+    };
+  }, [word, searchParams]);
+
+  const definitions = useMemo(() => {
+    return wordData?.definitions ?? wordData?.definations ?? [];
+  }, [wordData]);
+
+  const mainDef = definitions[0];
+
+  const firstExampleSentence = useMemo(() => {
+    for (const d of definitions) {
+      const ex = d?.example_sentence;
+      if (typeof ex === "string" && ex.trim()) return ex.trim();
+    }
+    return "";
+  }, [definitions]);
+
+  const displayWord = wordData?.word || "Rizz";
+  const displayDefinition =
+    mainDef?.definition || "The ability to charm or attract someone using confidence.";
+  const displayExample = firstExampleSentence
+    ? `Example: “${firstExampleSentence}”`
+    : `Example: “Bro pulled her in 2 mins — crazy ${title.toLowerCase()}.”`;
+
+  const mainCounts = mainDef ? countLikesDislikes(mainDef) : null;
+  const displayLikes = wordData?.total_likes ?? mainCounts?.likes ?? 9284;
+  const displayDislikes = wordData?.total_dislikes ?? mainCounts?.dislikes ?? 112;
+
+  const altDefs: AltDef[] = useMemo(() => {
+    const fallback: AltDef[] = [
+      {
+        text: "Game or charisma used to impress someone.",
+        likes: 1120,
+        comments: 90,
+      },
+      { text: "Smooth talking mentality.", likes: 320, comments: 40 },
+      { text: "Flirty confidence energy.", likes: 143, comments: 15 },
+    ];
+
+    const defs = definitions;
+    if (defs.length === 0) return fallback;
+
+    const mapped = defs.slice(0, 4).map((d) => {
+      const { likes, dislikes } = countLikesDislikes(d);
+      return { text: d.definition, likes, comments: dislikes };
+    });
+
+    return mapped;
+  }, [definitions]);
+
+  const origins: OriginItem[] = useMemo(() => {
+    const apiUsername = wordData?.username;
+    const firstUser = wordData?.first_user;
+    const firstResponseUser = definitions?.[0]?.responses?.[0]?.user;
+
+    const byRaw =
+      apiUsername ??
+      (firstUser != null ? firstUser : undefined) ??
+      (firstResponseUser != null ? firstResponseUser : undefined) ??
+      "@username";
+
+    const by = typeof byRaw === "string" ? byRaw : String(byRaw);
+
+    const date = formatShortDate(
+      wordData?.created_at || definitions?.[0]?.responses?.[0]?.created_at
+    );
+
+    return [{ by, date }];
+  }, [wordData, definitions]);
+
+  const related = useMemo(() => {
+    const fallback = ["W Rizz", "Skibidi", "Ohio Rizz", "Ohio Rizz"];
+    const fromApi = (
+      wordData?.Alternate_spelllings ?? wordData?.Alternate_spellings ?? []
+    ).filter(Boolean);
+    const out = fromApi.length > 0 ? fromApi.slice(0, 4) : fallback;
+    while (out.length < 4) out.push(fallback[out.length]);
+    return out;
+  }, [wordData]);
 
   const handleMeaningSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,24 +273,20 @@ export default function WordDetailPage({
         <section className="relative max-w-6xl mx-auto px-6 -mt-24 ">
           <div className="bg-white rounded-3xl shadow-md shadow-[#00000026]  p-6 md:p-8">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <h1 className="font-display !text-7xl md:text-5xl font-extrabold tracking-tight">
-                {/* {title} */}Rizz
+              <h1 className="font-display text-7xl! md:text-5xl font-extrabold tracking-tight">
+                {titleCase(displayWord)}
               </h1>
             </div>
 
-            <p className="mt-3 text-lg text-[#00336E]">
-              The ability to charm or attract someone using confidence.
-            </p>
-            <p className="mt-2 text-lg text-[#00336E]">
-              Example: “Bro pulled her in 2 mins — crazy {title.toLowerCase()}.”
-            </p>
+            <p className="mt-3 text-lg text-[#00336E]">{displayDefinition}</p>
+            <p className="mt-2 text-lg text-[#00336E]">{displayExample}</p>
 
             <div className="mt-4 flex items-center gap-5 text-[#000000]">
               <span className="inline-flex font-bold items-center gap-1 text-sm">
-                <AiOutlineLike /> 9,284
+                <AiOutlineLike /> {displayLikes.toLocaleString()}
               </span>
               <span className="inline-flex font-bold items-center gap-1 text-sm">
-                <AiOutlineDislike /> 112
+                <AiOutlineDislike /> {displayDislikes.toLocaleString()}
               </span>
             </div>
           </div>
@@ -102,7 +295,7 @@ export default function WordDetailPage({
       <section className="max-w-6xl mx-auto px-6 py-10 space-y-10 ">
         {/* Alternate Definitions */}
         <div className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl p-6 md:p-8 ">
-          <h2 className="font-display !text-4xl md:text-2xl font-bold mb-4">
+          <h2 className="font-display text-4xl! md:text-2xl font-bold mb-4">
             Alternate Definitions
           </h2>
           <div className="grid md:grid-cols-3 gap-4">
@@ -130,7 +323,7 @@ export default function WordDetailPage({
             onSubmit={handleMeaningSubmit}
             className="bg-white mt-8  rounded-3xl   space-y-4"
           >
-            <h2 className="!text-4xl md:text-2xl font-bold">
+            <h2 className="text-4xl! md:text-2xl font-bold">
               Your meaning of this word:
             </h2>
             <div className="border border-[#00336E] flex items-center px-3 py-5 rounded-md bg-[#fdfefe] focus-within:ring-2 focus-within:ring-[#0f2d5c]">
@@ -157,7 +350,7 @@ export default function WordDetailPage({
 
         {/* Related Words */}
         <div className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl  p-6 md:p-8 ">
-          <h2 className="font-display !text-4xl md:text-2xl font-bold mb-4">Related Words</h2>
+          <h2 className="font-display text-4xl! md:text-2xl font-bold mb-4">Related Words</h2>
           <div className="flex justify-around gap-6 ">
             {related.map((r, idx) => (
               <span
@@ -176,7 +369,7 @@ export default function WordDetailPage({
             key={idx}
             className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl p-6 md:p-8"
           >
-            <h2 className="font-display !text-4xl md:text-2xl font-bold mb-4">
+            <h2 className="font-display text-4xl! md:text-2xl font-bold mb-4">
               Word Origin / First Use
             </h2>
             <div className="grid md:grid-cols-2 gap-4">

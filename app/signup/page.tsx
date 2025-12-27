@@ -1,9 +1,35 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { api } from "@/lib/https";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function SignupPage() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      await api.post("user_auth/signup/", formData);
+      router.push("/login");
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || "Signup failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <main className="min-h-screen pt-24 pb-12 flex items-center justify-center px-4 bg-slate-50">
       <div className="w-full max-w-md bg-white rounded-3xl p-8 border border-[#00336E] shadow-lg hover:shadow-xl transition-all duration-300">
@@ -14,7 +40,12 @@ export default function SignupPage() {
           </p>
         </div>
 
-        <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          {error && (
+            <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <label
               htmlFor="username"
@@ -25,7 +56,10 @@ export default function SignupPage() {
             <input
               id="username"
               type="text"
+              value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
               placeholder="CoolUser123"
+              required
               className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
             />
           </div>
@@ -40,7 +74,10 @@ export default function SignupPage() {
             <input
               id="email"
               type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="hello@example.com"
+              required
               className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
             />
           </div>
@@ -55,13 +92,21 @@ export default function SignupPage() {
             <input
               id="password"
               type="password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               placeholder="••••••••"
+              required
               className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
             />
           </div>
 
-          <Button className="w-full text-lg py-6 mt-4" size="lg">
-            Sign Up
+          <Button
+            className="w-full text-lg py-6 mt-4"
+            size="lg"
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? "Creating Account..." : "Sign Up"}
           </Button>
         </form>
 
