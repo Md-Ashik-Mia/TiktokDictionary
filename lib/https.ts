@@ -1,7 +1,7 @@
 import axios, { AxiosHeaders, type InternalAxiosRequestConfig } from "axios";
 
 // Using the provided API URL
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://10.10.13.61:8015/api/v1/";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://5ns6rzl5-8017.inc1.devtunnels.ms/api/v1/";
 
 /**
  * Attach Authorization header from localStorage.
@@ -16,7 +16,6 @@ function attachAuth(
       if (!config.headers) {
         config.headers = new AxiosHeaders();
       }
-
       const headers = config.headers;
       if (headers instanceof AxiosHeaders) {
         headers.set("Authorization", `Bearer ${token}`);

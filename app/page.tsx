@@ -1,14 +1,8 @@
-
-import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
+import { SubmitCTA } from "../components/common/SubmitCTA";
 import { HeroSection } from "./components/HeroSection";
 import { TrendingSection } from "./components/TrendingSection";
-import { MostAgreed } from "./components//MostAgreed";
-import { FreshSubmissions } from "./components/FreshSubmissions";
-import { ExploreCategories } from "./components//ExploreCategories";
-import { WhyExists } from "./components/WhyExists";
-import { SubmitCTA } from "../components/common/SubmitCTA";
 
 export default function HomePage() {
   return (

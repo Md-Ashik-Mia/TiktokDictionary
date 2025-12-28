@@ -339,6 +339,8 @@ import { SubmitCTA } from "@/components/common/SubmitCTA";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
+import { api, userApi } from "@/lib/https";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
 import { FiChevronDown } from "react-icons/fi";
@@ -346,36 +348,294 @@ import { MdArrowOutward, MdCelebration } from "react-icons/md";
 
 type ModalState = "none" | "softDup" | "hardDup" | "success";
 
-const SOFT_DUP_WORDS = ["delulu"];
-const HARD_DUP_WORDS = ["rizz"];
+type SubmitWordResponse = {
+  message?: string;
+  duplicate_tag?: boolean;
+  dictionary_id?: number;
+  error?: string;
+  word_id?: number;
+  definition?: { definition?: string; example_sentence?: string };
+  definition_id?: number;
+  user_likes?: number;
+};
+
+type ApiResponseItem = {
+  is_like: boolean;
+  is_dislike: boolean;
+};
+
+type ApiDefinition = {
+  id: number;
+  definition: string;
+  example_sentence?: string;
+  responses?: ApiResponseItem[];
+};
+
+type ApiWord = {
+  id: number;
+  word: string;
+  definitions?: ApiDefinition[];
+  definations?: ApiDefinition[];
+};
+
+type GetWordsResponse = {
+  results: ApiWord[];
+};
+
+type ExistingDefinitionDetails = {
+  wordId: number;
+  word: string;
+  definition: string;
+  exampleSentence: string;
+  likes: number;
+  dislikes: number;
+};
 
 // shared pill style for all single-line fields
 const singleLineField =
   "border border-[#00336E] rounded-[24px] px-5 h-[56px] bg-white flex items-center";
 
 export default function SubmitPage() {
+  const router = useRouter();
+
   const [word, setWord] = useState("");
+  const [definition, setDefinition] = useState("");
+  const [exampleSentence, setExampleSentence] = useState("");
+  const [categoryName, setCategoryName] = useState("Slang");
+  const [source, setSource] = useState("");
+  const [alternateSpellingsRaw, setAlternateSpellingsRaw] = useState("");
+  const [hashtagsRaw, setHashtagsRaw] = useState("");
+
   const [modal, setModal] = useState<ModalState>("none");
   const [isNsfw, setIsNsfw] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAddingDefinition, setIsAddingDefinition] = useState(false);
+  const [lastResponse, setLastResponse] = useState<SubmitWordResponse | null>(
+    null
+  );
+  const [existingWordId, setExistingWordId] = useState<number | null>(null);
+  const [existingDetails, setExistingDetails] = useState<ExistingDefinitionDetails | null>(null);
 
-  const resetForm = () => setWord("");
+  const resetForm = () => {
+    setWord("");
+    setDefinition("");
+    setExampleSentence("");
+    setCategoryName("Slang");
+    setSource("");
+    setAlternateSpellingsRaw("");
+    setHashtagsRaw("");
+    setIsNsfw(false);
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const value = word.trim().toLowerCase();
-    if (!value) return;
+  const parseList = (raw: string) =>
+    raw
+      .split(/[\n,]/g)
+      .map((s) => s.trim())
+      .filter(Boolean);
 
-    if (HARD_DUP_WORDS.includes(value)) {
-      setModal("hardDup");
-    } else if (SOFT_DUP_WORDS.includes(value)) {
-      setModal("softDup");
-    } else {
-      setModal("success");
-      resetForm();
+  const getUserIdFromStorage = () => {
+    if (typeof window === "undefined") return null;
+    const userStr = localStorage.getItem("user");
+    if (!userStr) return null;
+    try {
+      const user = JSON.parse(userStr) as { id?: number };
+      return typeof user.id === "number" ? user.id : null;
+    } catch {
+      return null;
     }
   };
 
-  const handleContinueAnyway = () => setModal("success");
+  const slugifyWord = (w: string) =>
+    encodeURIComponent(w.trim().toLowerCase().replace(/\s+/g, "-"));
+
+  const isMeaningAlreadyExistsError = (msg?: string) =>
+    typeof msg === "string" && /meaning/i.test(msg) && /exist/i.test(msg);
+
+  const isWordExistsDefinitionMismatchError = (msg?: string) =>
+    typeof msg === "string" && /word\s+exists/i.test(msg) && /definition/i.test(msg);
+
+  const countLikesDislikes = (def: ApiDefinition) => {
+    const responses = def.responses ?? [];
+    let likes = 0;
+    let dislikes = 0;
+    for (const r of responses) {
+      if (r.is_like) likes += 1;
+      if (r.is_dislike) dislikes += 1;
+    }
+    return { likes, dislikes };
+  };
+
+  const unwrapWordResponse = (data: unknown): ApiWord | null => {
+    if (!data || typeof data !== "object") return null;
+    const maybe = data as Record<string, unknown>;
+    const results = maybe.results;
+    if (Array.isArray(results) && results.length > 0) {
+      const first = results[0];
+      if (first && typeof first === "object") return first as ApiWord;
+    }
+    return data as ApiWord;
+  };
+
+  const fetchExistingDefinitionDetails = async (definitionId: number) => {
+    const search = word.trim();
+    if (!search) return;
+    try {
+      const res = await api.get<GetWordsResponse>("dictionary/get-words/", {
+        params: { search },
+      });
+      const results = res.data?.results ?? [];
+      const exact = results.find(
+        (r) => r.word?.trim().toLowerCase() === search.toLowerCase()
+      );
+      const wordId = (exact ?? results[0])?.id;
+      if (!wordId) return;
+
+      const fullRes = await api.post<unknown>("dictionary/get-words/", {
+        word_id: wordId,
+      });
+      const fullWord = unwrapWordResponse(fullRes.data);
+      if (!fullWord) return;
+
+      const defs = fullWord.definitions ?? fullWord.definations ?? [];
+      const match = defs.find((d) => d.id === definitionId) ?? defs[0];
+      if (!match) return;
+
+      const counts = countLikesDislikes(match);
+      setExistingDetails({
+        wordId: fullWord.id,
+        word: fullWord.word,
+        definition: match.definition,
+        exampleSentence: match.example_sentence ?? "",
+        likes: counts.likes,
+        dislikes: counts.dislikes,
+      });
+      setExistingWordId(fullWord.id);
+    } catch {
+      // best-effort; keep modal functional even if this fails
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const wordValue = word.trim();
+    const defValue = definition.trim();
+
+    if (!wordValue || !defValue) return;
+    if (isSubmitting) return;
+
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+    }
+
+    const userId = getUserIdFromStorage();
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+
+    const payload = {
+      dictionary: {
+        word: wordValue,
+        Category: {
+          name: categoryName.trim().toLowerCase(),
+          user: userId,
+        },
+        Source: source.trim(),
+        Category_yes: isNsfw,
+        Alternate_spelllings: parseList(alternateSpellingsRaw),
+        Hashtags: parseList(hashtagsRaw),
+      },
+      definition: {
+        definition: defValue,
+        example_sentence: exampleSentence.trim(),
+      },
+    };
+
+    setIsSubmitting(true);
+    try {
+      const response = await userApi.post("dictionary/submit-word/", payload);
+      const data = (response?.data ?? null) as SubmitWordResponse | null;
+      setLastResponse(data);
+
+      // Scenario 2 (older API behavior): 201 + duplicate_tag=true
+      if (data?.duplicate_tag) {
+        const id = data.dictionary_id ?? data.word_id ?? null;
+        setExistingWordId(typeof id === "number" ? id : null);
+        setModal("softDup");
+        return;
+      }
+
+      setModal("success");
+      resetForm();
+    } catch (err: unknown) {
+      const maybeErr = err as {
+        response?: { status?: number; data?: unknown };
+      };
+      const status = maybeErr.response?.status;
+      const data = (maybeErr.response?.data ?? null) as SubmitWordResponse | null;
+      setLastResponse(data);
+
+      // Scenario 2 (new API behavior): error + word_id
+      if (status === 400 && isWordExistsDefinitionMismatchError(data?.error)) {
+        const id = data?.word_id ?? data?.dictionary_id ?? null;
+        setExistingWordId(typeof id === "number" ? id : null);
+        setModal("softDup");
+        return;
+      }
+
+      // Scenario 3: meaning already exists (same definition)
+      if (status === 400 && isMeaningAlreadyExistsError(data?.error)) {
+        const defId = data?.definition_id;
+        setExistingDetails(null);
+        if (typeof defId === "number") {
+          void fetchExistingDefinitionDetails(defId);
+        }
+        setModal("hardDup");
+        return;
+      }
+
+      if (status === 409) {
+        setModal("hardDup");
+        return;
+      }
+      console.error("Submit word failed", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAddNewDefinition = async () => {
+    if (isAddingDefinition) return;
+    const wordId =
+      existingWordId ?? lastResponse?.word_id ?? lastResponse?.dictionary_id ?? null;
+    if (typeof wordId !== "number") return;
+
+    const defText =
+      lastResponse?.definition?.definition?.trim() || definition.trim();
+    const exText =
+      lastResponse?.definition?.example_sentence?.trim() ||
+      exampleSentence.trim();
+    if (!defText) return;
+
+    setIsAddingDefinition(true);
+    try {
+      await userApi.post("dictionary/definations/", {
+        word: wordId,
+        definition: defText,
+        example_sentence: exText,
+      });
+      setModal("success");
+      resetForm();
+    } catch (err) {
+      console.error("Add definition failed", err);
+    } finally {
+      setIsAddingDefinition(false);
+    }
+  };
 
   return (
     <main className="flex flex-col bg-[#f4f6fb]">
@@ -430,6 +690,8 @@ export default function SubmitPage() {
               </div>
               <div className={singleLineField}>
                 <input
+                  value={definition}
+                  onChange={(e) => setDefinition(e.target.value)}
                   className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
                   placeholder="Write the clearest, simplest definition. Avoid long explanations."
                 />
@@ -437,12 +699,14 @@ export default function SubmitPage() {
             </div>
             {/* EXAMPLE SENTENCE – same height as other fields */}
             <div className="relative md:col-span-2">
-              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#00336E]">
+              <div className="absolute -top-3 left-6 bg-white px-2  text-[11px] font-semibold text-[#00336E]">
                 Example Sentence
               </div>
               <div className={singleLineField}>
                 <textarea
-                  className="w-full h-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0] resize-none"
+                  value={exampleSentence}
+                  onChange={(e) => setExampleSentence(e.target.value)}
+                  className="w-full h-full pt-4 bg-transparent text-sm outline-none placeholder:text-[#9FB0D0] resize-none"
                   placeholder="Use the word in a real sentence (e.g. “He’s got insane rizz.”)"
                   rows={1}
                 />
@@ -458,7 +722,8 @@ export default function SubmitPage() {
 
               <div className="h-[58px] rounded-[18px] border border-[#00336E] bg-white flex items-center px-6">
                 <select
-                  defaultValue="Slang"
+                  value={categoryName}
+                  onChange={(e) => setCategoryName(e.target.value)}
                   className="w-full bg-transparent text-sm outline-none appearance-none pr-6 text-[#00336E] placeholder:text-[#9FB0D0] border-none"
                 >
                   <option>Slang</option>
@@ -480,6 +745,8 @@ export default function SubmitPage() {
               </div>
               <div className={singleLineField}>
                 <input
+                  value={source}
+                  onChange={(e) => setSource(e.target.value)}
                   className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
                   placeholder="Paste TikTok link (optional) (Helps us verify and track trend origin)"
                 />
@@ -524,6 +791,8 @@ export default function SubmitPage() {
               </div>
               <div className={singleLineField}>
                 <input
+                  value={alternateSpellingsRaw}
+                  onChange={(e) => setAlternateSpellingsRaw(e.target.value)}
                   className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
                   placeholder="Add variations (e.g. ‘rizz’, ‘wrizz’, ‘rizzed’)"
                 />
@@ -537,6 +806,8 @@ export default function SubmitPage() {
               </div>
               <div className={singleLineField}>
                 <input
+                  value={hashtagsRaw}
+                  onChange={(e) => setHashtagsRaw(e.target.value)}
                   className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
                   placeholder="Add relevant hashtags (e.g. #TikTokSlang #GenAlpha)"
                 />
@@ -545,8 +816,13 @@ export default function SubmitPage() {
 
             {/* SUBMIT BUTTON */}
             <div className="md:col-span-2 flex flex-col gap-2 pt-2">
-              <Button type="submit" size="lg" className="self-start">
-                Add Word ↗
+              <Button
+                type="submit"
+                size="lg"
+                className="self-start"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Add Word ↗"}
               </Button>
               <p className="text-[11px] text-slate-500">
                 By submitting, you agree your entry may be reviewed or edited.
@@ -556,17 +832,6 @@ export default function SubmitPage() {
         </div>
       </section>
       <SubmitCTA />
-  <div className="">
-        <button className="pl-9" onClick={() => setModal("success")}>
-        sucess
-      </button>
-      <button className="pl-9" onClick={() => setModal("hardDup")}>
-        harddup
-      </button>
-      <button className="pl-9" onClick={() => setModal("softDup")}>
-       softdup
-      </button>
-  </div>
       <Footer />
 
       {/* MODALS (same logic as before) */}
@@ -590,21 +855,30 @@ export default function SubmitPage() {
 
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => setModal("hardDup")}
+                  onClick={() => {
+                    const slug = slugifyWord(word);
+                    const id = existingWordId ?? lastResponse?.word_id ?? lastResponse?.dictionary_id;
+                    if (slug && typeof id === "number") router.push(`/word/${slug}?id=${id}`);
+                    else if (slug) router.push(`/word/${slug}`);
+                    setModal("none");
+                  }}
                   className="w-full border border-[#00336E] text-[#00336E] rounded-full py-3.5 px-6 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#f0f5ff] transition-colors"
                 >
                   View Existing Word <MdArrowOutward className="text-lg" />
                 </button>
 
                 <button
-                  onClick={() => setModal("success")}
+                  onClick={handleAddNewDefinition}
+                  disabled={isAddingDefinition}
                   className="w-full border border-[#00336E] text-[#00336E] rounded-full py-3.5 px-6 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#f0f5ff] transition-colors"
                 >
-                  Add New Definition <MdArrowOutward className="text-lg" />
+                  {isAddingDefinition ? "Adding..." : "Add New Definition"}{" "}
+                  <MdArrowOutward className="text-lg" />
                 </button>
 
                 <button
-                  onClick={handleContinueAnyway}
+                  onClick={handleAddNewDefinition}
+                  disabled={isAddingDefinition}
                   className="w-full border border-[#00336E] text-[#00336E] rounded-full py-3.5 px-6 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#f0f5ff] transition-colors"
                 >
                   Continue Anyway <MdArrowOutward className="text-lg" />
@@ -630,37 +904,53 @@ export default function SubmitPage() {
                   </h3>
                 </div>
                 <p className="text-[#00336E] text-sm leading-relaxed px-4">
-                  The ability to attract someone using confidence or smooth
-                  talking.
+                  {existingDetails?.definition ||
+                    lastResponse?.error ||
+                    lastResponse?.message ||
+                    "Meaning of this definition already exists."}
                 </p>
 
                 <div className="mt-4">
                   <h4 className="font-bold text-[#00336E] text-sm">Example:</h4>
-                  <p className="text-[#00336E] text-sm">Bro has insane rizz.</p>
+                  <p className="text-[#00336E] text-sm">
+                    {existingDetails?.exampleSentence || "—"}
+                  </p>
                 </div>
 
                 <div className="flex items-center justify-center gap-6 mt-4 text-[#00336E] font-semibold text-sm">
-                   <div className="flex items-center gap-1.5">
-                      <AiOutlineLike className="text-lg" /> 3.2k
-                   </div>
-                   <div className="flex items-center gap-1.5">
-                      <AiOutlineDislike className="text-lg" /> 210
-                   </div>
+                  <div className="flex items-center gap-1.5">
+                    <AiOutlineLike className="text-lg" />
+                    {existingDetails ? existingDetails.likes.toLocaleString() : "—"}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <AiOutlineDislike className="text-lg" />
+                    {existingDetails
+                      ? existingDetails.dislikes.toLocaleString()
+                      : "—"}
+                  </div>
                 </div>
               </div>
 
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={() => setModal("none")}
+                  onClick={() => {
+                    const slug = slugifyWord(word);
+                    const id = existingWordId ?? lastResponse?.word_id ?? lastResponse?.dictionary_id;
+                    if (slug && typeof id === "number") router.push(`/word/${slug}?id=${id}`);
+                    else if (slug) router.push(`/word/${slug}`);
+                    setModal("none");
+                  }}
                   className="flex-1 border border-[#00336E] text-[#00336E] rounded-full py-3 px-4 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#f0f5ff] transition-colors"
                 >
                   View Word <MdArrowOutward className="text-lg" />
                 </button>
                 <button
-                  onClick={() => setModal("success")}
+                  onClick={handleAddNewDefinition}
+                  disabled={isAddingDefinition}
                   className="flex-1 border border-[#00336E] text-[#00336E] rounded-full py-3 px-4 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#f0f5ff] transition-colors"
                 >
-                  Add New Definition <MdArrowOutward className="text-lg" />
+                  {isAddingDefinition ? "Adding..." : "Add New Definition"}{" "}
+                  <MdArrowOutward className="text-lg" />
                 </button>
               </div>
             </div>

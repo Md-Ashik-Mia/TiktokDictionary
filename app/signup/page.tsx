@@ -22,10 +22,19 @@ export default function SignupPage() {
     setError("");
 
     try {
-      await api.post("user_auth/signup/", formData);
-      router.push("/login");
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.message || "Signup failed. Please try again.");
+      await api.post("user_auth/register/", formData);
+      router.push(`/otp?email=${encodeURIComponent(formData.email.trim())}`);
+    } catch (err: unknown) {
+      const maybeErr = err as {
+        response?: { data?: { message?: string; error?: string } };
+        message?: string;
+      };
+      setError(
+        maybeErr.response?.data?.message ||
+          maybeErr.response?.data?.error ||
+          maybeErr.message ||
+          "Signup failed. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }

@@ -117,7 +117,7 @@ export function WordSearch({ placeholder }: { placeholder?: string }) {
         setResults(list);
         setOpen(true);
         setActiveIndex(-1);
-      } catch (err) {
+      } catch {
         if (controller.signal.aborted) return;
         setResults([]);
         setOpen(true);

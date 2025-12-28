@@ -1,13 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { FiChevronDown } from "react-icons/fi";
 
 type Timeframe = "today" | "week" | "month";
 
-export const FilterSection = () => {
-  const [timeframe, setTimeframe] = useState<Timeframe>("today");
-  const [filter, setFilter] = useState("Slang");
+export const FilterSection = ({
+  timeframe,
+  onTimeframeChange,
+  category,
+  onCategoryChange,
+  categories,
+}: {
+  timeframe: Timeframe;
+  onTimeframeChange: (value: Timeframe) => void;
+  category: string;
+  onCategoryChange: (value: string) => void;
+  categories: string[];
+}) => {
 
   return (
     <div className="max-w-6xl mx-auto px-6">
@@ -19,7 +28,7 @@ export const FilterSection = () => {
           <div className="relative">
             <select
               value={timeframe}
-              onChange={(e) => setTimeframe(e.target.value as Timeframe)}
+              onChange={(e) => onTimeframeChange(e.target.value as Timeframe)}
               className="w-full appearance-none bg-white border border-[#00336E] rounded-[15px] px-4 py-3.5 text-sm text-[#00336E] outline-none cursor-pointer shadow-sm focus:ring-2 focus:ring-[#00336E]/10"
             >
               <option value="today">Today</option>
@@ -35,15 +44,21 @@ export const FilterSection = () => {
           </label>
           <div className="relative">
             <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+              value={category}
+              onChange={(e) => onCategoryChange(e.target.value)}
               className="w-full appearance-none bg-white border border-[#00336E] rounded-[15px] px-4 py-3.5 text-sm text-[#00336E] outline-none cursor-pointer shadow-sm focus:ring-2 focus:ring-[#00336E]/10"
             >
-              <option>Slang</option>
-              <option>TikTok Trends</option>
-              <option>Memes</option>
-              <option>Audio</option>
-              <option>Acronyms</option>
+              {categories.length === 0 ? (
+                <option value="" disabled>
+                  Loading categories...
+                </option>
+              ) : (
+                categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))
+              )}
             </select>
             <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#00336E]" />
           </div>
