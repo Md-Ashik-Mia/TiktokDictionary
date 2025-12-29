@@ -641,7 +641,7 @@ export default function SubmitPage() {
     <main className="flex flex-col bg-[#f4f6fb]">
       {/* HERO + BG UNDER NAVBAR */}
       <section
-        className="pb-20 pt-4  "
+        className="pb-20 pt-24 sm:pt-28"
         style={{
           background:
             "linear-gradient(to bottom, #dceaff 0%, #eaf1ff 50%, #ffffff 50%)",
@@ -649,10 +649,10 @@ export default function SubmitPage() {
       >
         <Navbar />
 
-        <div className="max-w-5xl mx-auto px-6 mt-50">
+        <div className="max-w-5xl mx-auto px-6 mt-10 sm:mt-16">
           {/* centered title like Figma */}
           <div className="text-center mb-10">
-            <h1 className="font-display font-bold text-[2.6rem] md:text-[3rem] text-[#00336E]">
+            <h1 className="font-display font-bold text-3xl sm:text-[2.6rem] md:text-[3rem] text-[#00336E]">
               Submit a New Word
             </h1>
             <p className="mt-2 text-sm text-[#00336E]">
@@ -819,7 +819,7 @@ export default function SubmitPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="self-start"
+                className="w-full md:w-auto self-stretch md:self-start"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Submitting..." : "Add Word ↗"}

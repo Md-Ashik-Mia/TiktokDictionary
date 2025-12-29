@@ -8,7 +8,7 @@ export default function HomePage() {
   return (
     <main className="flex  flex-col bg-white">
       <HeroSection />
-      <section className="max-w-6xl min-h-screen mx-auto px-6 py-52">
+      <section className="max-w-6xl min-h-screen mx-auto px-6 py-20 sm:py-32 md:py-52">
         <TrendingSection />
       </section>
 

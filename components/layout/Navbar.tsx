@@ -45,19 +45,20 @@ export function Navbar() {
   };
 
   return (
-    <header className="flex items-center justify-between px-6 md:px-10 py-6 max-w-7xl  fixed left-[50%] translate-x-[-50%] w-full z-50  backdrop-blur-md  ">
-      <Link href="/" className="text-2xl font-semibold text-black">
+    <header className="fixed top-0 left-1/2 z-50 w-full max-w-7xl -translate-x-1/2 backdrop-blur-md px-4 sm:px-6 md:px-10 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+      <Link href="/" className="text-xl sm:text-2xl font-semibold text-black text-center sm:text-left">
         <span className="text-white ">TikTok</span>Dictionary
       </Link>
-      <div className="flex justify-around gap-9">
+
+      <nav className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-6 text-sm sm:text-base">
         <Link href="/discover">Discover</Link>
         <Link href="/word/rizz">Word Details</Link>
         <Link href="/submit">Submit</Link>
-      </div>
+      </nav>
 
       {user ? (
-        <div className="flex items-center gap-4">
-          <span className="font-semibold text-slate-800 capitalize">{user.username}</span>
+        <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4">
+          <span className="font-semibold text-slate-800 capitalize truncate max-w-[140px] sm:max-w-[220px]">{user.username}</span>
           <Button
             onClick={handleLogout}
             className="rounded-full text-sm font-sans bg-transparent text-slate-600 border border-slate-300 hover:bg-slate-100"
@@ -66,8 +67,8 @@ export function Navbar() {
           </Button>
         </div>
       ) : (
-        <Link href="/login">
-          <Button className="rounded-full text-lg font-sans">
+        <Link href="/login" className="flex justify-center sm:justify-end">
+          <Button className="rounded-full text-base sm:text-lg font-sans">
             Login
           </Button>
         </Link>

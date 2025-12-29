@@ -63,8 +63,8 @@ export const AudioHashtagSection = () => {
 
   return (
     <section className="max-w-6xl mx-auto px-6">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="font-display font-bold text-5xl! md:text-[2.2rem] text-[#00336E]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-[2.2rem] text-[#00336E]">
           Audio / Hashtag Trends
         </h2>
         {!expanded && items.length > 2 ? (
@@ -83,12 +83,12 @@ export const AudioHashtagSection = () => {
         {(expanded ? items : items.slice(0, 2)).map((item, i) => (
           <article
             key={i}
-            className="rounded-[24px] text-2xl border border-[#000000] bg-white p-8 flex flex-col justify-center gap-1 hover:shadow-md transition-all"
+            className="rounded-[24px] border border-[#000000] bg-white p-6 sm:p-8 flex flex-col justify-center gap-1 hover:shadow-md transition-all"
           >
-            <h3 className="font-display font-bold text-2xl text-[#000000]">
+            <h3 className="font-display font-bold text-lg sm:text-2xl text-[#000000]">
               {item.title}
             </h3>
-            <p className="font-display font-bold text-2xl text-[#000000]">
+            <p className="font-display font-bold text-lg sm:text-2xl text-[#000000]">
               {item.subtitle}
             </p>
           </article>

@@ -11,13 +11,13 @@ export const ExploreCategories = () => {
   ];
 
   return (
-    <section className="min-h-screen bg-[#EFF6FE] py-25 ">
-      <div className="max-w-6xl mx-auto px-6 mt-20">
-        <h2 className="font-display font-bold lg:text-6xl md:text-[3.2rem] leading-none text-[#00336E]">
+    <section className="min-h-screen bg-[#EFF6FE] py-20 sm:py-24">
+      <div className="max-w-6xl mx-auto px-6 mt-10 sm:mt-20">
+        <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-[3.2rem] lg:text-6xl leading-none text-[#00336E]">
           Explore Categories
         </h2>
 
-        <p className="my-4 font-sans text-lg text-[#00336E]">
+        <p className="my-4 font-sans text-base sm:text-lg text-[#00336E]">
           Definitions voted accurate by the community.
         </p>
 

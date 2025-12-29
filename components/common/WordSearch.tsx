@@ -215,7 +215,7 @@ export function WordSearch({ placeholder }: { placeholder?: string }) {
             if (trimmed) setOpen(true);
           }}
           onKeyDown={onKeyDown}
-          className="flex-1 w-3xl h-10 border-none bg-transparent text-sm outline-none placeholder:text-slate-400"
+          className="flex-1 min-w-0 h-10 border-none bg-transparent text-sm outline-none placeholder:text-slate-400"
           placeholder={placeholder ?? "What does ‘delulu’ mean?"}
           role="combobox"
           aria-expanded={showDropdown}

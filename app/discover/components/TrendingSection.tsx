@@ -186,8 +186,8 @@ export const TrendingSection = ({
 
   return (
     <section className="max-w-6xl mx-auto px-6 mt-12">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="font-display font-bold text-5xl! md:text-[2.2rem] text-[#00336E]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-[2.2rem] text-[#00336E]">
           Trending Words
         </h2>
         <div className="flex items-center gap-2">

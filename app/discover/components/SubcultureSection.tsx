@@ -146,7 +146,7 @@ export const SubcultureSection = () => {
 
   return (
     <section className="max-w-6xl mx-auto px-6">
-      <h2 className="font-display font-bold text-5xl! md:text-[2.2rem] text-[#00336E] mb-6">
+      <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-[2.2rem] text-[#00336E] mb-6">
         Subculture Words
       </h2>
 
@@ -169,11 +169,11 @@ export const SubcultureSection = () => {
         })}
       </div>
 
-      <div className="grid gap-5 md:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {words.map((item) => (
           <article
             key={item.word}
-            className="rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col justify-between h-[140px] hover:shadow-md transition-all"
+            className="rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col justify-between min-h-[140px] hover:shadow-md transition-all"
           >
             <h3 className="font-display font-bold text-2xl text-[#000000]">
               {item.word}

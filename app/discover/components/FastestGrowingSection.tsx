@@ -99,8 +99,8 @@ export const FastestGrowingSection = () => {
   return (
     <section className="bg-[#EFF6FE] py-16">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="font-display font-bold text-5xl! md:text-[2.2rem] text-[#00336E]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-[2.2rem] text-[#00336E]">
             Fastest Growing Words
           </h2>
           <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export const FastestGrowingSection = () => {
           </div>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3">
           {items.length === 0
             ? null
             : getVisibleItems(items, fastestIndex, Math.min(3, items.length)).map((item, i) => (

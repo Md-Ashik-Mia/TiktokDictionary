@@ -21,12 +21,12 @@ export function Footer() {
         <hr className="border-slate-300 mb-6" />
 
         {/* Bottom row */}
-        <div className="flex items-center justify-between text-sm text-[#000000]">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#000000] text-center sm:text-left">
           {/* Left: Copyright */}
           <p>© Copyright 2025. All Rights Reserved</p>
 
           {/* Right: Social icons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center gap-3">
             <Link
               href="#"
               className="w-10 h-10 flex items-center justify-center rounded-full border border-slate-400 hover:bg-slate-200 transition"

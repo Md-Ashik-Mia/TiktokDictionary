@@ -556,7 +556,7 @@ export default function WordDetailPage({
     <main className="min-h-screen flex flex-col bg-white text-[#0f2d5c]">
       {/* Hero background split */}
       <div className="relative">
-        <div className="bg-[#e9f2ff] pb-80 pt-6">
+        <div className="bg-[#e9f2ff] pb-80 pt-24 sm:pt-28">
           <Navbar />
         </div>
         <div
@@ -576,7 +576,7 @@ export default function WordDetailPage({
           ) : (
             <div className="bg-white rounded-3xl shadow-md shadow-[#00000026]  p-6 md:p-8">
               <div className="flex items-center justify-between gap-4 flex-wrap">
-                <h1 className="font-display text-7xl! md:text-5xl font-extrabold tracking-tight">
+                <h1 className="font-display text-4xl sm:text-5xl md:text-5xl font-extrabold tracking-tight">
                   {titleCase(displayWord)}
                 </h1>
               </div>
@@ -612,7 +612,7 @@ export default function WordDetailPage({
       <section className="max-w-6xl mx-auto px-6 py-10 space-y-10 ">
         {/* Alternate Definitions */}
         <div id="definitions" className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl p-6 md:p-8 ">
-          <h2 className="font-display text-4xl! md:text-2xl font-bold mb-4">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-2xl font-bold mb-4">
             Alternate Definitions
           </h2>
           <div className="grid md:grid-cols-3 gap-4">
@@ -654,7 +654,7 @@ export default function WordDetailPage({
             onSubmit={handleMeaningSubmit}
             className="bg-white mt-8  rounded-3xl   space-y-4"
           >
-            <h2 className="text-4xl! md:text-2xl font-bold">
+            <h2 className="text-2xl sm:text-3xl md:text-2xl font-bold">
               Your meaning of this word:
             </h2>
             <div className="border border-[#00336E] flex items-center px-3 py-5 rounded-md bg-[#fdfefe] focus-within:ring-2 focus-within:ring-[#0f2d5c]">
@@ -685,12 +685,12 @@ export default function WordDetailPage({
 
         {/* Related Words */}
         <div className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl  p-6 md:p-8 ">
-          <h2 className="font-display text-4xl! md:text-2xl font-bold mb-4">Related Words</h2>
-          <div className="flex justify-around gap-6 ">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-2xl font-bold mb-4">Related Words</h2>
+          <div className="flex flex-wrap gap-3 sm:gap-6">
             {related.map((r, idx) => (
               <span
                 key={idx}
-                className="px-4 py-5 w-1/4  rounded-xl bg-[#f3f7ff]  text-[18px] text-[#0f2d5c]"
+                className="px-4 py-4 w-full sm:w-[48%] md:w-1/4 rounded-xl bg-[#f3f7ff] text-base sm:text-[18px] text-[#0f2d5c]"
               >
                 {r}
               </span>
@@ -704,7 +704,7 @@ export default function WordDetailPage({
             key={idx}
             className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl p-6 md:p-8"
           >
-            <h2 className="font-display text-4xl! md:text-2xl font-bold mb-4">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-2xl font-bold mb-4">
               Word Origin / First Use
             </h2>
             <div className="grid md:grid-cols-2 gap-4">

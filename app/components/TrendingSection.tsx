@@ -498,7 +498,7 @@ export const TrendingSection = () => {
   return (
     <div className="w-full">
       {/* Heading + description (LEFT aligned) */}
-      <h2 className="font-display font-bold lg:text-6xl md:text-[3.2rem] leading-none text-[#00336E]">
+      <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-[3.2rem] lg:text-6xl leading-none text-[#00336E]">
         Trending Right Now
       </h2>
 
@@ -507,7 +507,7 @@ export const TrendingSection = () => {
       </p>
 
       {/* Tabs (LEFT aligned) */}
-      <div className="mt-8 flex gap-3">
+      <div className="mt-8 flex flex-wrap gap-3">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -528,7 +528,7 @@ export const TrendingSection = () => {
         {filteredData.map((item) => (
           <article
             key={item.word}
-            className="flex flex-col justify-between h-52 w-full rounded-2xl p-5 border border-[#00336E] bg-white shadow-sm hover:shadow-md transition-all"
+            className="flex flex-col justify-between min-h-52 w-full rounded-2xl p-5 border border-[#00336E] bg-white shadow-sm hover:shadow-md transition-all"
           >
             <div>
               {/* word + rank */}

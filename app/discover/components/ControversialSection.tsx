@@ -88,7 +88,7 @@ export const ControversialSection = () => {
 
   return (
     <section className="max-w-6xl mx-auto px-6">
-      <h2 className="font-display font-bold text-5xl! md:text-[2.2rem] text-[#00336E] mb-8">
+      <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-[2.2rem] text-[#00336E] mb-8">
         Most Controversial
       </h2>
       <div className="grid gap-6 md:grid-cols-2">
