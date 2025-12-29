@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/lib/https";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AiOutlineLike } from "react-icons/ai";
 
@@ -41,12 +42,29 @@ function pickTopDefinition(defs?: TrendingApiDefinition[]) {
   return (best?.definition ?? "").trim();
 }
 
+function wordToSlug(word: string) {
+  const normalized = word.trim().replace(/\s+/g, "-");
+  return encodeURIComponent(normalized);
+}
+
 export const TrendingSection = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TrendingTab>("today");
   const [remoteByTab, setRemoteByTab] = useState<
     Partial<Record<TrendingTab, TrendingCard[]>>
   >({});
   const [loading, setLoading] = useState(false);
+
+  function navigateToWord(word: string, wordId?: number) {
+    const trimmed = word.trim();
+    if (!trimmed) return;
+    const slug = wordToSlug(trimmed);
+    router.push(
+      typeof wordId === "number"
+        ? `/word/${slug}?id=${encodeURIComponent(String(wordId))}`
+        : `/word/${slug}`
+    );
+  }
 
   const tabs = [
     { key: "today" as const, label: "Today" },
@@ -157,7 +175,16 @@ export const TrendingSection = () => {
         {filteredData.map((item) => (
           <article
             key={item.wordId != null ? String(item.wordId) : `${item.word}-${item.rank}`}
-            className="flex flex-col justify-between min-h-52 w-full rounded-2xl p-5 border border-[#00336E] bg-white shadow-sm hover:shadow-md transition-all"
+            className="flex flex-col justify-between min-h-52 w-full rounded-2xl p-5 border border-[#00336E] bg-white shadow-sm hover:shadow-md transition-all cursor-pointer"
+            role="link"
+            tabIndex={0}
+            onClick={() => navigateToWord(item.word, item.wordId)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                navigateToWord(item.word, item.wordId);
+              }
+            }}
           >
             <div>
               {/* word + rank */}

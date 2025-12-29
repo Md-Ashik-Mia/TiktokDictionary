@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/lib/https";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { IoIosArrowDropleft, IoIosArrowDropright } from "react-icons/io";
 import { LuHandshake } from "react-icons/lu";
@@ -24,6 +25,7 @@ type TrendingApiWordItem = {
 type TrendingApiResponse = TrendingApiWordItem[];
 
 type TrendingCard = {
+  wordId?: number;
   word: string;
   badge: string;
   stat: React.ReactNode;
@@ -64,6 +66,11 @@ function categoryToApi(category: string) {
   return normalized;
 }
 
+function wordToSlug(word: string) {
+  const normalized = word.trim().replace(/\s+/g, "-");
+  return encodeURIComponent(normalized);
+}
+
 export const TrendingSection = ({
   timeframe,
   category,
@@ -71,9 +78,21 @@ export const TrendingSection = ({
   timeframe: Timeframe;
   category: string;
 }) => {
+  const router = useRouter();
   const [trendingIndex, setTrendingIndex] = useState(0);
   const [items, setItems] = useState<TrendingCard[]>([]);
   const [loading, setLoading] = useState(false);
+
+  function navigateToWord(word: string, wordId?: number) {
+    const trimmed = word.trim();
+    if (!trimmed) return;
+    const slug = wordToSlug(trimmed);
+    router.push(
+      typeof wordId === "number"
+        ? `/word/${slug}?id=${encodeURIComponent(String(wordId))}`
+        : `/word/${slug}`
+    );
+  }
 
   const getVisibleItems = <T,>(items: T[], startIndex: number, count: number) => {
     if (items.length === 0) return [];
@@ -143,6 +162,7 @@ export const TrendingSection = ({
         const mapped: TrendingCard[] = unique
           .map((x, idx) => {
             return {
+              wordId: x.wordId,
               word: x.word,
               badge,
               stat: (
@@ -225,6 +245,15 @@ export const TrendingSection = ({
           <article
             key={`${item.word}-${i}`}
             className="group rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col gap-3 hover:shadow-lg transition-all duration-300 cursor-pointer"
+            role="link"
+            tabIndex={0}
+            onClick={() => navigateToWord(item.word, item.wordId)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                navigateToWord(item.word, item.wordId);
+              }
+            }}
           >
             <div className="flex items-start justify-between">
               <h3 className="font-display font-bold text-2xl text-[#000000]">

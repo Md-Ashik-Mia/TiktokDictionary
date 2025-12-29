@@ -29,7 +29,8 @@ type Timeframe = "today" | "week" | "month";
 export default function DiscoverPage() {
   const [timeframe, setTimeframe] = useState<Timeframe>("today");
   const [categories, setCategories] = useState<string[]>([]);
-  const [category, setCategory] = useState<string>("");
+  // Default to Slang on initial visit.
+  const [category, setCategory] = useState<string>("Slang");
 
   useEffect(() => {
     let alive = true;
@@ -60,12 +61,15 @@ export default function DiscoverPage() {
         setCategory((prev) => {
           const prevKey = prev.trim().toLowerCase();
           if (prevKey && names.some((n) => n.toLowerCase() === prevKey)) return prev;
-          return names[0] ?? "";
+
+          // Prefer "Slang" if the backend provides it (any casing).
+          const slang = names.find((n) => n.trim().toLowerCase() === "slang");
+          return slang ?? names[0] ?? "";
         });
       } catch {
         if (!alive) return;
         setCategories([]);
-        setCategory("");
+        setCategory("Slang");
       }
     }
 
