@@ -54,16 +54,16 @@ export default function LoginPage() {
     }
   };
   return (
-    <main className="min-h-screen pt-24 pb-12 flex items-center justify-center px-4 bg-slate-50">
-      <div className="w-full max-w-md bg-white rounded-3xl p-8 border border-[#00336E] shadow-lg hover:shadow-xl transition-all duration-300">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-display font-bold text-[#00336E] mb-2">Welcome Back</h1>
-          <p className="text-[#769ECC] font-medium text-lg">
+    <main className="min-h-screen pt-20 sm:pt-24 pb-10 sm:pb-12 flex items-center justify-center px-4 sm:px-6 bg-slate-50">
+      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 border border-[#00336E] shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl font-display font-bold text-[#00336E] mb-2">Welcome Back</h1>
+          <p className="text-[#769ECC] font-medium text-base sm:text-lg">
             Log in to continue your streak
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-5 sm:space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg">
               {error}
@@ -83,7 +83,7 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Username"
               required
-              className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
+              className="w-full px-4 sm:px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
             />
           </div>
 
@@ -103,12 +103,12 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
+              className="w-full px-4 sm:px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
             />
           </div>
 
           <Button
-            className="w-full text-lg py-6 mt-4"
+            className="w-full text-base sm:text-lg py-5 sm:py-6 mt-4"
             size="lg"
             type="submit"
             disabled={isLoading}

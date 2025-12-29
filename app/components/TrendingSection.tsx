@@ -7,18 +7,23 @@ import { AiOutlineLike } from "react-icons/ai";
 type TrendingTab = "today" | "week" | "month";
 
 type TrendingApiDefinition = {
+  definition_id?: number;
   definition?: string;
-  is_primary?: boolean;
+  likes?: number;
 };
 
-type TrendingApiWordData = {
+type TrendingApiWordItem = {
+  word_id?: number;
+  word?: string;
+  category?: string;
   total_likes?: number;
   definitions?: TrendingApiDefinition[];
 };
 
-type TrendingApiResponse = Record<string, TrendingApiWordData>;
+type TrendingApiResponse = TrendingApiWordItem[];
 
 type TrendingCard = {
+  wordId?: number;
   word: string;
   rank: number;
   category: string;
@@ -29,11 +34,11 @@ type TrendingCard = {
 
 function pickTopDefinition(defs?: TrendingApiDefinition[]) {
   const list = Array.isArray(defs) ? defs : [];
-  const primary = list.find((d) => d?.is_primary && typeof d.definition === "string");
-  if (primary?.definition?.trim()) return primary.definition.trim();
-
-  const first = list.find((d) => typeof d?.definition === "string" && d.definition.trim());
-  return first?.definition?.trim() ?? "";
+  const best = list
+    .filter((d) => typeof d?.definition === "string" && d.definition.trim())
+    .slice()
+    .sort((a, b) => Number(b?.likes ?? 0) - Number(a?.likes ?? 0))[0];
+  return (best?.definition ?? "").trim();
 }
 
 export const TrendingSection = () => {
@@ -62,20 +67,24 @@ export const TrendingSection = () => {
           { signal: controller.signal }
         );
 
-        const entries = Object.entries(res.data ?? {});
-        const cards = entries
-          .map(([word, data]) => {
-            const likes = Number(data?.total_likes ?? 0);
-            const definition = pickTopDefinition(data?.definitions);
+        const list = Array.isArray(res.data) ? res.data : [];
+        const cards = list
+          .map((item) => {
+            const likes = Number(item?.total_likes ?? 0);
+            const definition = pickTopDefinition(item?.definitions);
+            const word = String(item?.word ?? "").trim();
+            const category = String(item?.category ?? "Trending").trim() || "Trending";
             return {
+              wordId: typeof item?.word_id === "number" ? item.word_id : undefined,
               word,
               rank: 0,
-              category: "Trending",
+              category,
               definition,
               likes,
               period: activeTab,
             } satisfies TrendingCard;
           })
+          .filter((c) => c.word.length > 0)
           .sort((a, b) => b.likes - a.likes)
           .map((item, idx) => ({ ...item, rank: idx + 1 }));
 
@@ -147,7 +156,7 @@ export const TrendingSection = () => {
 
         {filteredData.map((item) => (
           <article
-            key={item.word}
+            key={item.wordId != null ? String(item.wordId) : `${item.word}-${item.rank}`}
             className="flex flex-col justify-between min-h-52 w-full rounded-2xl p-5 border border-[#00336E] bg-white shadow-sm hover:shadow-md transition-all"
           >
             <div>

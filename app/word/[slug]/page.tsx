@@ -572,7 +572,6 @@ export default function WordDetailPage({
       const ax = asAxiosError(err);
       // Make the backend validation error visible in the console.
       // This is crucial to align the UI payload with what the API expects.
-      // eslint-disable-next-line no-console
       console.error("Reaction request failed", ax?.response?.status, ax?.response?.data ?? err);
       // Revert on failure.
       applyOptimisticReaction(definitionId, current ?? { is_like: false, is_dislike: false });

@@ -60,7 +60,8 @@ export function Navbar() {
           <span className="font-semibold text-slate-800 capitalize truncate max-w-[140px] sm:max-w-[220px]">{user.username}</span>
           <Button
             onClick={handleLogout}
-            className="rounded-full text-sm font-sans bg-transparent text-slate-600 border border-slate-300 hover:bg-slate-100"
+            variant="ghost"
+            className="text-sm font-sans border border-slate-300 bg-transparent !text-red-600 hover:bg-slate-100 hover:!text-red-700"
           >
             Logout
           </Button>

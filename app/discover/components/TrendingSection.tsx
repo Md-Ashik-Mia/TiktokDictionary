@@ -7,12 +7,21 @@ import { LuHandshake } from "react-icons/lu";
 
 type Timeframe = "today" | "week" | "month";
 
-type TrendingApiItem = {
-  total_likes: number;
-  definitions: Record<string, number>;
+type TrendingApiDefinition = {
+  definition_id?: number;
+  definition?: string;
+  likes?: number;
 };
 
-type TrendingApiResponse = Record<string, TrendingApiItem>;
+type TrendingApiWordItem = {
+  word_id?: number;
+  word?: string;
+  category?: string;
+  total_likes?: number;
+  definitions?: TrendingApiDefinition[];
+};
+
+type TrendingApiResponse = TrendingApiWordItem[];
 
 type TrendingCard = {
   word: string;
@@ -21,6 +30,15 @@ type TrendingCard = {
   description: string;
   isHot: boolean;
 };
+
+function pickTopDefinition(defs?: TrendingApiDefinition[]) {
+  const list = Array.isArray(defs) ? defs : [];
+  const best = list
+    .filter((d) => typeof d?.definition === "string" && d.definition.trim())
+    .slice()
+    .sort((a, b) => Number(b?.likes ?? 0) - Number(a?.likes ?? 0))[0];
+  return (best?.definition ?? "").trim();
+}
 
 function timeframeToDay(tf: Timeframe) {
   if (tf === "today") return "1";
@@ -102,19 +120,37 @@ export const TrendingSection = ({
           { signal: controller.signal }
         );
 
-        const data = res.data ?? ({} as TrendingApiResponse);
-        const mapped: TrendingCard[] = Object.entries(data)
-          .map(([word, payload], idx) => {
-            const firstDef = Object.keys(payload?.definitions ?? {})[0] ?? "";
+        const list = Array.isArray(res.data) ? res.data : [];
+        const sorted = list
+          .map((item) => ({
+            wordId: typeof item?.word_id === "number" ? item.word_id : undefined,
+            word: String(item?.word ?? "").trim(),
+            totalLikes: Number(item?.total_likes ?? 0),
+            definition: pickTopDefinition(item?.definitions),
+          }))
+          .filter((x) => x.word.length > 0)
+          .sort((a, b) => b.totalLikes - a.totalLikes);
+
+        // Backend sometimes returns duplicates; keep the highest-like entry per word_id (or per word if id missing).
+        const seen = new Set<string>();
+        const unique = sorted.filter((x) => {
+          const key = x.wordId != null ? `id:${x.wordId}` : `word:${x.word.toLowerCase()}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+
+        const mapped: TrendingCard[] = unique
+          .map((x, idx) => {
             return {
-              word,
+              word: x.word,
               badge,
               stat: (
                 <>
-                  <LuHandshake /> {payload?.total_likes ?? 0}
+                  <LuHandshake /> {x.totalLikes}
                 </>
               ),
-              description: firstDef,
+              description: x.definition,
               isHot: idx < 3,
             };
           })
