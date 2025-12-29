@@ -728,7 +728,7 @@ export default function SubmitPage() {
                 >
                   <option>Slang</option>
                   <option>TikTok Trends</option>
-                  <option>Memes</option>
+                  <option>Meme</option>
                   <option>Audio Sounds</option>
                 </select>
 
