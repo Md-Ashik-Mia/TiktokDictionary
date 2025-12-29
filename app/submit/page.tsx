@@ -8,8 +8,8 @@
 
 // type ModalState = "none" | "softDup" | "hardDup" | "success";
 
-// const SOFT_DUP_WORDS = ["delulu"];
-// const HARD_DUP_WORDS = ["rizz"];
+// const SOFT_DUP_WORDS: string[] = [];
+// const HARD_DUP_WORDS: string[] = [];
 
 // export default function SubmitPage() {
 //   const [word, setWord] = useState("");
@@ -79,7 +79,7 @@
 //                   value={word}
 //                   onChange={(e) => setWord(e.target.value)}
 //                   className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
-//                   placeholder="Enter the word or phrase (e.g. ‘Delulu’, ‘NPC’, ‘Rizz God’)"
+//                   placeholder="Enter the word or phrase"
 //                 />
 //               </div>
 //             </div>
@@ -108,7 +108,7 @@
 //               <div className="border border-[#00336E] rounded-2xl px-4 py-3 bg-white">
 //                 <textarea
 //                   className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0] min-h-[70px] resize-none"
-//                   placeholder="Use the word in a real sentence (e.g. “He’s got insane rizz.”)"
+//                   placeholder="Use the word in a real sentence"
 //                 />
 //               </div>
 //             </div>
@@ -186,7 +186,7 @@
 //               <div className="border border-[#00336E] rounded-2xl px-4 py-3 bg-white">
 //                 <input
 //                   className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
-//                   placeholder="Add variations (e.g. ‘rizz’, ‘wrizz’, ‘rizzed’)"
+//                   placeholder="Add variations (optional)"
 //                 />
 //               </div>
 //             </div>
@@ -275,7 +275,7 @@
 //                 talking.
 //               </p>
 //               <p className="text-xs text-slate-500 italic">
-//                 Example: Bro has insane rizz.
+//                 Example: Use the word in a sentence.
 //               </p>
 
 //               <div className="flex gap-3 mt-4 flex-col sm:flex-row">
@@ -675,7 +675,7 @@ export default function SubmitPage() {
                   value={word}
                   onChange={(e) => setWord(e.target.value)}
                   className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
-                  placeholder="Enter the word or phrase (e.g. ‘Delulu’, ‘NPC’, ‘Rizz God’)"
+                  placeholder="Enter the word or phrase"
                 />
               </div>
             </div>
@@ -707,7 +707,7 @@ export default function SubmitPage() {
                   value={exampleSentence}
                   onChange={(e) => setExampleSentence(e.target.value)}
                   className="w-full h-full pt-4 bg-transparent text-sm outline-none placeholder:text-[#9FB0D0] resize-none"
-                  placeholder="Use the word in a real sentence (e.g. “He’s got insane rizz.”)"
+                  placeholder="Use the word in a real sentence"
                   rows={1}
                 />
               </div>
@@ -794,7 +794,7 @@ export default function SubmitPage() {
                   value={alternateSpellingsRaw}
                   onChange={(e) => setAlternateSpellingsRaw(e.target.value)}
                   className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
-                  placeholder="Add variations (e.g. ‘rizz’, ‘wrizz’, ‘rizzed’)"
+                  placeholder="Add variations (optional)"
                 />
               </div>
             </div>

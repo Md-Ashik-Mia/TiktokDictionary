@@ -19,7 +19,7 @@ export const HeroSection = () => {
         </p>
 
         <div className="my-5 flex items-center justify-center w-full">
-          <WordSearch placeholder="What does ‘delulu’ mean?" />
+          <WordSearch placeholder="Search for a word" />
         </div>
         <p className="mt-3 text-[14px] text-slate-600">
           Press <span className="font-semibold">Enter</span> to search

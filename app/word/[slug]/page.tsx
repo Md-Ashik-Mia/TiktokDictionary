@@ -6,11 +6,11 @@ import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { api, userApi } from "@/lib/https";
 import { useSearchParams } from "next/navigation";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { use, useEffect, useMemo, useState } from "react";
 import { AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
 import {
-  FiChevronRight,
-  FiX,
+    FiChevronRight,
+    FiX,
 } from "react-icons/fi";
 import { MdInfo } from "react-icons/md";
 
@@ -148,9 +148,9 @@ function isSameUser(a: string | number | undefined, userId: number | null) {
 }
 
 function formatShortDate(iso?: string) {
-  if (!iso) return "18 Jul 2025";
+  if (!iso) return "";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "18 Jul 2025";
+  if (Number.isNaN(d.getTime())) return "";
   return d.toLocaleDateString(undefined, {
     day: "2-digit",
     month: "short",
@@ -167,16 +167,22 @@ const titleCase = (s: string) =>
 export default function WordDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: { slug: string } | Promise<{ slug: string }>;
 }) {
+  const resolvedParams =
+    params && typeof (params as { then?: unknown })?.then === "function"
+      ? use(params as Promise<{ slug: string }>)
+      : (params as { slug: string });
+
   const searchParams = useSearchParams();
   const word = useMemo(
-    () => decodeURIComponent(params.slug || "word").replace(/-/g, " "),
-    [params.slug]
+    () => decodeURIComponent(resolvedParams?.slug ?? "").replace(/-/g, " "),
+    [resolvedParams?.slug]
   );
   const title = useMemo(() => titleCase(word), [word]);
 
   const [isLoadingWord, setIsLoadingWord] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [wordData, setWordData] = useState<ApiWord | null>(null);
 
@@ -217,8 +223,9 @@ export default function WordDetailPage({
     async function load() {
       try {
         setIsLoadingWord(true);
+        setLoadError(false);
         setNotFound(false);
-        const idParam = searchParams?.get("id");
+        const idParam = searchParams?.get("id") ?? searchParams?.get("word_id");
         const directId = idParam ? Number(idParam) : NaN;
 
         const wordId = Number.isFinite(directId)
@@ -236,10 +243,17 @@ export default function WordDetailPage({
         if (!alive) return;
         setWordData(data);
         setNotFound(!data);
-      } catch {
+      } catch (err: unknown) {
         if (!alive) return;
         setWordData(null);
-        setNotFound(true);
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        if (status === 404) {
+          setNotFound(true);
+          setLoadError(false);
+        } else {
+          setNotFound(false);
+          setLoadError(true);
+        }
       } finally {
         if (alive) setIsLoadingWord(false);
       }
@@ -267,50 +281,20 @@ export default function WordDetailPage({
     return "";
   }, [definitions]);
 
-  const displayWord = wordData?.word || "Rizz";
-  const displayDefinition =
-    mainDef?.definition || "The ability to charm or attract someone using confidence.";
-  const displayExample = firstExampleSentence
-    ? `Example: “${firstExampleSentence}”`
-    : `Example: “Bro pulled her in 2 mins — crazy ${title.toLowerCase()}.”`;
+  const displayWord = (wordData?.word ?? word).trim();
+  const displayDefinition = mainDef?.definition?.trim() ?? "";
+  const displayExample = firstExampleSentence ? `Example: “${firstExampleSentence}”` : "";
 
   const mainCounts = mainDef ? countLikesDislikes(mainDef) : null;
-  const displayLikes = wordData?.total_likes ?? mainCounts?.likes ?? 9284;
-  const displayDislikes = wordData?.total_dislikes ?? mainCounts?.dislikes ?? 112;
+  const displayLikes = wordData?.total_likes ?? mainCounts?.likes ?? 0;
+  const displayDislikes = wordData?.total_dislikes ?? mainCounts?.dislikes ?? 0;
 
   const mainLikedByMe = mainDefId ? myReactions[mainDefId]?.is_like === true : false;
   const mainDislikedByMe = mainDefId ? myReactions[mainDefId]?.is_dislike === true : false;
 
   const altDefs: AltDef[] = useMemo(() => {
-    const fallback: AltDef[] = [
-      {
-        id: -1,
-        text: "Game or charisma used to impress someone.",
-        likes: 1120,
-        dislikes: 90,
-        isLikedByMe: false,
-        isDislikedByMe: false,
-      },
-      {
-        id: -2,
-        text: "Smooth talking mentality.",
-        likes: 320,
-        dislikes: 40,
-        isLikedByMe: false,
-        isDislikedByMe: false,
-      },
-      {
-        id: -3,
-        text: "Flirty confidence energy.",
-        likes: 143,
-        dislikes: 15,
-        isLikedByMe: false,
-        isDislikedByMe: false,
-      },
-    ];
-
     const defs = definitions;
-    if (defs.length === 0) return fallback;
+    if (defs.length === 0) return [];
 
     return defs.slice(0, 4).map((d) => {
       const { likes, dislikes } = countLikesDislikes(d);
@@ -481,25 +465,29 @@ export default function WordDetailPage({
       apiUsername ??
       (firstUser != null ? firstUser : undefined) ??
       (firstResponseUser != null ? firstResponseUser : undefined) ??
-      "@username";
+      undefined;
 
-    const by = typeof byRaw === "string" ? byRaw : String(byRaw);
+    const by =
+      byRaw == null
+        ? "Not available"
+        : typeof byRaw === "string"
+          ? byRaw
+          : String(byRaw);
 
-    const date = formatShortDate(
+    const rawDate = formatShortDate(
       wordData?.created_at || definitions?.[0]?.responses?.[0]?.created_at
     );
+
+    const date = rawDate.trim() ? rawDate : "Not available";
 
     return [{ by, date }];
   }, [wordData, definitions]);
 
   const related = useMemo(() => {
-    const fallback = ["W Rizz", "Skibidi", "Ohio Rizz", "Ohio Rizz"];
     const fromApi = (
       wordData?.Alternate_spelllings ?? wordData?.Alternate_spellings ?? []
     ).filter(Boolean);
-    const out = fromApi.length > 0 ? fromApi.slice(0, 4) : fallback;
-    while (out.length < 4) out.push(fallback[out.length]);
-    return out;
+    return fromApi.slice(0, 4);
   }, [wordData]);
 
   const handleMeaningSubmit = async (e: React.FormEvent) => {
@@ -564,7 +552,24 @@ export default function WordDetailPage({
           aria-hidden
         />
         <section className="relative max-w-6xl mx-auto px-6 -mt-24 ">
-          {!isLoadingWord && notFound ? (
+          {isLoadingWord ? (
+            <div className="bg-white rounded-3xl shadow-md shadow-[#00000026]  p-6 md:p-8 animate-pulse">
+              <div className="h-10 w-1/2 bg-slate-200 rounded" />
+              <div className="mt-4 h-5 w-5/6 bg-slate-200 rounded" />
+              <div className="mt-3 h-5 w-2/3 bg-slate-200 rounded" />
+              <div className="mt-6 flex gap-4">
+                <div className="h-6 w-24 bg-slate-200 rounded" />
+                <div className="h-6 w-24 bg-slate-200 rounded" />
+              </div>
+            </div>
+          ) : loadError ? (
+            <div className="bg-white rounded-3xl shadow-md shadow-[#00000026] p-8 md:p-10 text-center">
+              <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight text-[#0f2d5c]">
+                {title}
+              </h1>
+              <p className="mt-4 text-lg text-[#00336E]">Unable to load this word right now.</p>
+            </div>
+          ) : notFound ? (
             <div className="bg-white rounded-3xl shadow-md shadow-[#00000026] p-8 md:p-10 text-center">
               <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight text-[#0f2d5c]">
                 {title}
@@ -581,8 +586,16 @@ export default function WordDetailPage({
                 </h1>
               </div>
 
-              <p className="mt-3 text-lg text-[#00336E]">{displayDefinition}</p>
-              <p className="mt-2 text-lg text-[#00336E]">{displayExample}</p>
+              {displayDefinition ? (
+                <p className="mt-3 text-lg text-[#00336E]">{displayDefinition}</p>
+              ) : (
+                <p className="mt-3 text-lg text-[#00336E]/60">No definition available yet.</p>
+              )}
+              {displayExample ? (
+                <p className="mt-2 text-lg text-[#00336E]">{displayExample}</p>
+              ) : (
+                <p className="mt-2 text-lg text-[#00336E]/60">No example available yet.</p>
+              )}
 
               <div className="mt-4 flex items-center gap-5 text-[#000000]">
                 <button
@@ -608,7 +621,7 @@ export default function WordDetailPage({
           )}
         </section>
       </div>
-      {!isLoadingWord && notFound ? null : (
+      {isLoadingWord || loadError || notFound ? null : (
       <section className="max-w-6xl mx-auto px-6 py-10 space-y-10 ">
         {/* Alternate Definitions */}
         <div id="definitions" className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl p-6 md:p-8 ">
@@ -616,6 +629,9 @@ export default function WordDetailPage({
             Alternate Definitions
           </h2>
           <div className="grid md:grid-cols-3 gap-4">
+            {altDefs.length === 0 ? (
+              <div className="text-sm text-slate-500">No definitions yet.</div>
+            ) : null}
             {altDefs.map((item) => (
               <div
                 key={item.id}
@@ -665,7 +681,7 @@ export default function WordDetailPage({
                 value={meaning}
                 onChange={(e) => setMeaning(e.target.value)}
                 className="flex-1 bg-transparent outline-none px-3 text-sm text-[#0f2d5c]"
-                placeholder="Text field"
+                placeholder="Write your meaning"
               />
             </div>
             {meaningError ? (
@@ -687,6 +703,9 @@ export default function WordDetailPage({
         <div className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl  p-6 md:p-8 ">
           <h2 className="font-display text-2xl sm:text-3xl md:text-2xl font-bold mb-4">Related Words</h2>
           <div className="flex flex-wrap gap-3 sm:gap-6">
+            {related.length === 0 ? (
+              <div className="text-sm text-slate-500">No related words yet.</div>
+            ) : null}
             {related.map((r, idx) => (
               <span
                 key={idx}

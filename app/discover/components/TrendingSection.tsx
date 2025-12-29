@@ -22,55 +22,6 @@ type TrendingCard = {
   isHot: boolean;
 };
 
-const fallbackTrending: TrendingCard[] = [
-  {
-    word: "Rizz",
-    badge: "Trending Today",
-    stat: (
-      <>
-        <LuHandshake /> 92%
-      </>
-    ),
-    description: "Confidence-based attraction skill.",
-    isHot: true,
-  },
-  {
-    word: "Delulu",
-    badge: "Trending Today",
-    stat: "88% agree",
-    description: "Being intentionally delusional.",
-    isHot: true,
-  },
-  {
-    word: "NPC Walk",
-    badge: "Viral Audio",
-    stat: "81% agree",
-    description: "Walking like a game NPC.",
-    isHot: false,
-  },
-  {
-    word: "Beige Flag",
-    badge: "Trending Today",
-    stat: "75% agree",
-    description: "A trait that is neither good nor bad, just odd.",
-    isHot: true,
-  },
-  {
-    word: "Girl Dinner",
-    badge: "Viral Trend",
-    stat: "95% agree",
-    description: "A meal consisting of random snacks.",
-    isHot: true,
-  },
-  {
-    word: "Canon Event",
-    badge: "Viral Concept",
-    stat: "89% agree",
-    description: "An unavoidable event that shapes character.",
-    isHot: false,
-  },
-];
-
 function timeframeToDay(tf: Timeframe) {
   if (tf === "today") return "1";
   if (tf === "week") return "7";
@@ -103,12 +54,13 @@ export const TrendingSection = ({
   category: string;
 }) => {
   const [trendingIndex, setTrendingIndex] = useState(0);
-  const [items, setItems] = useState<TrendingCard[]>(fallbackTrending);
+  const [items, setItems] = useState<TrendingCard[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const getVisibleItems = <T,>(items: T[], startIndex: number, count: number) => {
-    return new Array(count)
-      .fill(0)
-      .map((_, i) => items[(startIndex + i) % items.length]);
+    if (items.length === 0) return [];
+    if (items.length <= count) return items;
+    return new Array(count).fill(0).map((_, i) => items[(startIndex + i) % items.length]);
   };
 
   const nextSlide = (
@@ -133,9 +85,10 @@ export const TrendingSection = ({
 
     async function load() {
       try {
+        setLoading(true);
         if (!category.trim()) {
           if (!alive) return;
-          setItems(fallbackTrending);
+          setItems([]);
           setTrendingIndex(0);
           return;
         }
@@ -168,12 +121,14 @@ export const TrendingSection = ({
           .filter((x) => x.word.trim().length > 0);
 
         if (!alive) return;
-        setItems(mapped.length > 0 ? mapped : fallbackTrending);
+        setItems(mapped);
         setTrendingIndex(0);
       } catch {
         if (!alive) return;
-        setItems(fallbackTrending);
+        setItems([]);
         setTrendingIndex(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
 
@@ -184,6 +139,9 @@ export const TrendingSection = ({
     };
   }, [timeframe, category, badge]);
 
+  const canSlide = items.length > 3;
+  const visible = getVisibleItems(items, trendingIndex, 3);
+
   return (
     <section className="max-w-6xl mx-auto px-6 mt-12">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -192,14 +150,16 @@ export const TrendingSection = ({
         </h2>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => prevSlide(setTrendingIndex, items.length)}
-            className="text-[#00336E] hover:text-[#00336E]/80 transition"
+            onClick={() => (canSlide ? prevSlide(setTrendingIndex, items.length) : undefined)}
+            disabled={!canSlide}
+            className="text-[#00336E] hover:text-[#00336E]/80 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <IoIosArrowDropleft size={40} />
           </button>
           <button
-            onClick={() => nextSlide(setTrendingIndex, items.length)}
-            className="text-[#00336E] hover:text-[#00336E]/80 transition"
+            onClick={() => (canSlide ? nextSlide(setTrendingIndex, items.length) : undefined)}
+            disabled={!canSlide}
+            className="text-[#00336E] hover:text-[#00336E]/80 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <IoIosArrowDropright size={40} />
           </button>
@@ -207,7 +167,25 @@ export const TrendingSection = ({
       </div>
 
       <div className="grid gap-5 md:grid-cols-3">
-        {getVisibleItems(items, trendingIndex, 3).map((item, i) => (
+        {loading
+          ? Array.from({ length: 3 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col gap-3 animate-pulse"
+              >
+                <div className="h-6 w-2/3 bg-slate-200 rounded" />
+                <div className="h-4 w-1/2 bg-slate-200 rounded" />
+                <div className="h-4 w-full bg-slate-200 rounded" />
+                <div className="h-4 w-5/6 bg-slate-200 rounded" />
+              </div>
+            ))
+          : null}
+
+        {!loading && visible.length === 0 ? (
+          <div className="text-sm text-slate-500">No trending words found.</div>
+        ) : null}
+
+        {visible.map((item, i) => (
           <article
             key={`${item.word}-${i}`}
             className="group rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col gap-3 hover:shadow-lg transition-all duration-300 cursor-pointer"

@@ -52,7 +52,6 @@ export function Navbar() {
 
       <nav className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-6 text-sm sm:text-base">
         <Link href="/discover">Discover</Link>
-        <Link href="/word/rizz">Word Details</Link>
         <Link href="/submit">Submit</Link>
       </nav>
 

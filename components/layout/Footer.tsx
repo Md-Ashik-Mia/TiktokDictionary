@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FaTiktok, FaInstagram } from "react-icons/fa";
+import { FaInstagram, FaTiktok } from "react-icons/fa";
 import { RxTwitterLogo } from "react-icons/rx";
 
 export function Footer() {

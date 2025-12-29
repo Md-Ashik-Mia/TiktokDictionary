@@ -137,7 +137,9 @@ export function WordSearch({ placeholder }: { placeholder?: string }) {
     setOpen(false);
     setActiveIndex(-1);
     const slug = wordToSlug(word);
-    router.push(id ? `/word/${slug}?id=${encodeURIComponent(String(id))}` : `/word/${slug}`);
+    router.push(
+      id ? `/word/${slug}?word_id=${encodeURIComponent(String(id))}` : `/word/${slug}`
+    );
   }
 
   async function searchOnce(search: string) {
@@ -216,7 +218,7 @@ export function WordSearch({ placeholder }: { placeholder?: string }) {
           }}
           onKeyDown={onKeyDown}
           className="flex-1 min-w-0 h-10 border-none bg-transparent text-sm outline-none placeholder:text-slate-400"
-          placeholder={placeholder ?? "What does ‘delulu’ mean?"}
+          placeholder={placeholder ?? "Search for a word"}
           role="combobox"
           aria-expanded={showDropdown}
           aria-autocomplete="list"
