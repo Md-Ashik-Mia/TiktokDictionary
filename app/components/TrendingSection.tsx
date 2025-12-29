@@ -110,7 +110,7 @@ export const TrendingSection = () => {
         Trending Right Now
       </h2>
 
-      <p className="mt-2 font-sans text-lg text-[#00336E]">
+      <p className="mt-2 font-sans text-base sm:text-lg text-[#00336E]">
         Choose the correct meaning and discover new words instantly.
       </p>
 

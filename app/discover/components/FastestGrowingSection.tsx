@@ -12,13 +12,14 @@ type FastestGrowingItem = {
 };
 
 type FastestGrowingApiItem = {
+  word?: string;
   current_likes?: number;
   previous_likes?: number;
   category?: string;
   growth_rate?: number;
 };
 
-type FastestGrowingApiResponse = Record<string, FastestGrowingApiItem>;
+type FastestGrowingApiResponse = FastestGrowingApiItem[];
 
 function formatGrowthRate(value: number): string {
   if (Number.isNaN(value)) return "0%";
@@ -62,10 +63,11 @@ export const FastestGrowingSection = () => {
           { signal: controller.signal }
         );
 
-        const data = res.data ?? {};
-        const mapped = Object.entries(data)
-          .map(([word, meta]) => {
-            const category = typeof meta?.category === "string" ? meta.category : "";
+        const data = Array.isArray(res.data) ? res.data : [];
+        const mapped = data
+          .map((meta) => {
+            const word = typeof meta?.word === "string" ? meta.word.trim() : "";
+            const category = typeof meta?.category === "string" ? meta.category.trim() : "";
             const growthRate = typeof meta?.growth_rate === "number" ? meta.growth_rate : 0;
             return {
               word,
@@ -74,6 +76,7 @@ export const FastestGrowingSection = () => {
               growthRate,
             };
           })
+          .filter((x) => Boolean(x.word))
           .sort((a, b) => (b.growthRate ?? 0) - (a.growthRate ?? 0))
           .map((item) => ({ word: item.word, change: item.change, tag: item.tag }));
 

@@ -101,11 +101,11 @@ export const ExploreCategories = () => {
                 className="rounded-2xl bg-transparent border border-[#00336E] shadow-card px-5 py-6 text-left hover:-translate-y-1 hover:shadow-lg transition"
                 type="button"
               >
-                <p className="font-bold text-2xl text-[#00336E] text-center">{c.name}</p>
+                <p className="font-bold text-xl sm:text-2xl text-[#00336E] text-center">{c.name}</p>
                 {count ? (
-                  <p className="mt-1 text-[18px] text-[#00336E] text-center">{count}</p>
+                  <p className="mt-1 text-base sm:text-[18px] text-[#00336E] text-center">{count}</p>
                 ) : (
-                  <p className="mt-1 text-[18px] text-[#00336E]/60 text-center">Word count unavailable</p>
+                  <p className="mt-1 text-base sm:text-[18px] text-[#00336E]/60 text-center">Word count unavailable</p>
                 )}
               </button>
             );

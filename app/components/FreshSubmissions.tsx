@@ -91,11 +91,11 @@ export const FreshSubmissions = () => {
 
   return (
     <div className="w-full">
-      <h2 className="font-display font-bold lg:text-6xl md:text-[3.2rem] leading-none text-[#00336E]">
+      <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-[3.2rem] lg:text-6xl leading-none text-[#00336E]">
         Fresh Submissions
       </h2>
 
-      <p className="my-4 font-sans text-lg text-[#00336E]">
+      <p className="my-4 font-sans text-base sm:text-lg text-[#00336E]">
         Latest words discovered by users like you.
       </p>
 
@@ -142,9 +142,9 @@ export const FreshSubmissions = () => {
             <h3 className="mt-2 font-bold text-2xl text-[#00336E]">{w.word}</h3>
 
             {w.definition ? (
-              <p className="text-lg text-[#00336E]">{w.definition}</p>
+              <p className="text-base sm:text-lg text-[#00336E]">{w.definition}</p>
             ) : (
-              <p className="text-lg text-[#00336E]/60">No definition yet.</p>
+              <p className="text-base sm:text-lg text-[#00336E]/60">No definition yet.</p>
             )}
 
             {w.submittedAgo ? (

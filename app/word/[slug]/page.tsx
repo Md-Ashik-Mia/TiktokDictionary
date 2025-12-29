@@ -692,37 +692,37 @@ export default function WordDetailPage({
             </div>
           ) : loadError ? (
             <div className="bg-white rounded-3xl shadow-md shadow-[#00000026] p-8 md:p-10 text-center">
-              <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight text-[#0f2d5c]">
+              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0f2d5c]">
                 {title}
               </h1>
-              <p className="mt-4 text-lg text-[#00336E]">Unable to load this word right now.</p>
+              <p className="mt-4 text-base sm:text-lg text-[#00336E]">Unable to load this word right now.</p>
             </div>
           ) : notFound ? (
             <div className="bg-white rounded-3xl shadow-md shadow-[#00000026] p-8 md:p-10 text-center">
-              <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight text-[#0f2d5c]">
+              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0f2d5c]">
                 {title}
               </h1>
-              <p className="mt-4 text-lg text-[#00336E]">
+              <p className="mt-4 text-base sm:text-lg text-[#00336E]">
                 This word is not present in the dictionary.
               </p>
             </div>
           ) : (
             <div className="bg-white rounded-3xl shadow-md shadow-[#00000026]  p-6 md:p-8">
               <div className="flex items-center justify-between gap-4 flex-wrap">
-                <h1 className="font-display text-4xl sm:text-5xl md:text-5xl font-extrabold tracking-tight">
+                <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
                   {titleCase(displayWord)}
                 </h1>
               </div>
 
               {displayDefinition ? (
-                <p className="mt-3 text-lg text-[#00336E]">{displayDefinition}</p>
+                <p className="mt-3 text-base sm:text-lg text-[#00336E]">{displayDefinition}</p>
               ) : (
-                <p className="mt-3 text-lg text-[#00336E]/60">No definition available yet.</p>
+                <p className="mt-3 text-base sm:text-lg text-[#00336E]/60">No definition available yet.</p>
               )}
               {displayExample ? (
-                <p className="mt-2 text-lg text-[#00336E]">{displayExample}</p>
+                <p className="mt-2 text-base sm:text-lg text-[#00336E]">{displayExample}</p>
               ) : (
-                <p className="mt-2 text-lg text-[#00336E]/60">No example available yet.</p>
+                <p className="mt-2 text-base sm:text-lg text-[#00336E]/60">No example available yet.</p>
               )}
 
               <div className="mt-4 flex items-center gap-5 text-[#000000]">
@@ -753,7 +753,7 @@ export default function WordDetailPage({
       <section className="max-w-6xl mx-auto px-6 py-10 space-y-10 ">
         {/* Alternate Definitions */}
         <div id="definitions" className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl p-6 md:p-8 ">
-          <h2 className="font-display text-2xl sm:text-3xl md:text-2xl font-bold mb-4">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">
             Alternate Definitions
           </h2>
           <div className="grid md:grid-cols-3 gap-4">
@@ -765,7 +765,7 @@ export default function WordDetailPage({
                 key={item.id}
                 className="rounded-xl  bg-[#00336E0D] py-8 pl-2 flex flex-col justify-between"
               >
-                <p className="text-lg text-[#123a7a] leading-relaxed">
+                <p className="text-base sm:text-lg text-[#123a7a] leading-relaxed">
                   {`"` + item.text + `"`}
                 </p>
                 <div className="mt-3 flex items-center gap-4 text-xs text-[#0f2d5c]">
@@ -798,7 +798,7 @@ export default function WordDetailPage({
             onSubmit={handleMeaningSubmit}
             className="bg-white mt-8  rounded-3xl   space-y-4"
           >
-            <h2 className="text-2xl sm:text-3xl md:text-2xl font-bold">
+            <h2 className="text-2xl sm:text-3xl font-bold">
               Your meaning of this word:
             </h2>
             <div className="border border-[#00336E] flex items-center px-3 py-5 rounded-md bg-[#fdfefe] focus-within:ring-2 focus-within:ring-[#0f2d5c]">
@@ -829,7 +829,7 @@ export default function WordDetailPage({
 
         {/* Related Words */}
         <div className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl  p-6 md:p-8 ">
-          <h2 className="font-display text-2xl sm:text-3xl md:text-2xl font-bold mb-4">Related Words</h2>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">Related Words</h2>
           <div className="flex flex-wrap gap-3 sm:gap-6">
             {related.length === 0 ? (
               <div className="text-sm text-slate-500">No related words yet.</div>
@@ -851,21 +851,21 @@ export default function WordDetailPage({
             key={idx}
             className="bg-white border border-x-0 border-b-0  border-t-gray-50 rounded-3xl shadow-[#00000026] shadow-xl p-6 md:p-8"
           >
-            <h2 className="font-display text-2xl sm:text-3xl md:text-2xl font-bold mb-4">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">
               Word Origin / First Use
             </h2>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-[#00336E0D]  rounded-xl p-4 text-sm text-[#0f2d5c]">
-                <div className="text-[18px] text-[#00336E] mb-1">
+                <div className="text-base sm:text-[18px] text-[#00336E] mb-1">
                   Submitted originally by:
                 </div>
-                <div className="font-bold text-2xl text-[#00336E]">{o.by}</div>
+                <div className="font-bold text-xl sm:text-2xl text-[#00336E]">{o.by}</div>
               </div>
               <div className="bg-[#00336E0D]  rounded-xl p-4 text-sm text-[#0f2d5c]">
-                <div className="text-[18px] text-[#00336E] mb-1">
+                <div className="text-base sm:text-[18px] text-[#00336E] mb-1">
                   Date first submitted:
                 </div>
-                <div className="font-bold text-2xl text-[#00336E]">{o.date}</div>
+                <div className="font-bold text-xl sm:text-2xl text-[#00336E]">{o.date}</div>
               </div>
             </div>
           </div>

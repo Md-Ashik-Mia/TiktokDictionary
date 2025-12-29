@@ -19,7 +19,7 @@ export const WhyExists = () => {
       <div className="grid gap-4 sm:grid-cols-2 w-full lg:w-1/2">
         {/* Words Defined */}
         <div className="p-4 rounded-xl bg-[#EFF6FE]   ">
-          <div className="mt-2 text-4xl sm:text-[56px] font-bold text-[#00336E]">
+          <div className="mt-2 text-3xl sm:text-4xl md:text-[56px] font-bold text-[#00336E]">
             12k+
           </div>
           <div className="text-[16px] text-[#00336E] ">
@@ -30,7 +30,7 @@ export const WhyExists = () => {
 
         {/* Community Votes */}
         <div className="p-4 rounded-xl bg-[#EFF6FE]">
-            <div className="text-4xl sm:text-[56px] font-bold text-[#00336E]">
+            <div className="text-3xl sm:text-4xl md:text-[56px] font-bold text-[#00336E]">
             48k+
           </div>
           <div className=" text-[16px] text-[#00336E]">
@@ -41,7 +41,7 @@ export const WhyExists = () => {
 
         {/* Live Updates (Full Width) */}
         <div className=" rounded-xl bg-[#EFF6FE] p-6  col-span-full">
-          <div className="text-4xl sm:text-[56px] font-bold  text-[#00336E]">
+          <div className="text-3xl sm:text-4xl md:text-[56px] font-bold  text-[#00336E]">
             Live
           </div>
           <div className="mt-2 text-[16px] text-[#00336E]">

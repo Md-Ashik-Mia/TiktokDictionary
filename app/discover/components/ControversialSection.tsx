@@ -12,20 +12,20 @@ type ControversialCard = {
 };
 
 type ControversialApiDefinitionStats = {
-  likes: number;
-  dislikes: number;
+  definition?: string;
+  likes?: number;
+  dislikes?: number;
 };
 
 type ControversialApiItem = {
+  word?: string;
   total_likes?: number | string;
   total_dislikes?: number | string;
-  _total_likes?: number | string;
-  _total_dislikes?: number | string;
-  definitions: Record<string, ControversialApiDefinitionStats>;
-  controversy_score: number;
+  definitions?: ControversialApiDefinitionStats[];
+  controversy_score?: number;
 };
 
-type ControversialApiResponse = Record<string, ControversialApiItem>;
+type ControversialApiResponse = ControversialApiItem[];
 
 function toSafeCount(value: unknown): number {
   const n = typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
@@ -47,29 +47,24 @@ export const ControversialSection = () => {
           { signal: controller.signal }
         );
 
-        const data = res.data ?? ({} as ControversialApiResponse);
-        const mapped: ControversialCard[] = Object.entries(data)
-          .map(([word, payload]) => {
-            const firstDef = Object.keys(payload?.definitions ?? {})[0] ?? "";
-            const defStats = firstDef ? payload?.definitions?.[firstDef] : undefined;
-            const totalLikes = toSafeCount(payload?.total_likes ?? payload?._total_likes);
-            const totalDislikes = toSafeCount(payload?.total_dislikes ?? payload?._total_dislikes);
-            const likes =
-              typeof defStats?.likes === "number"
-                ? defStats.likes
-                : totalLikes;
-            const dislikes =
-              typeof defStats?.dislikes === "number"
-                ? defStats.dislikes
-                : totalDislikes;
-            return {
-              word,
-              reason: firstDef || "Highly debated meaning",
-              likes,
-              dislikes,
-            };
+        const data = Array.isArray(res.data) ? res.data : [];
+        const mapped: ControversialCard[] = data
+          .map((payload) => {
+            const word = typeof payload?.word === "string" ? payload.word.trim() : "";
+            const topDef = Array.isArray(payload?.definitions) ? payload.definitions[0] : undefined;
+
+            const totalLikes = toSafeCount(payload?.total_likes);
+            const totalDislikes = toSafeCount(payload?.total_dislikes);
+            const likes = typeof topDef?.likes === "number" ? topDef.likes : totalLikes;
+            const dislikes = typeof topDef?.dislikes === "number" ? topDef.dislikes : totalDislikes;
+            const reason =
+              typeof topDef?.definition === "string" && topDef.definition.trim()
+                ? topDef.definition.trim()
+                : "Highly debated meaning";
+
+            return { word, reason, likes, dislikes };
           })
-          .filter((x) => x.word.trim().length > 0);
+          .filter((x) => x.word.length > 0);
 
         if (!alive) return;
         setItems(mapped);

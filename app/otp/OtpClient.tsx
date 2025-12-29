@@ -84,18 +84,18 @@ export default function OtpClient() {
   };
 
   return (
-    <main className="min-h-screen pt-24 pb-12 flex items-center justify-center px-4 bg-slate-50">
-      <div className="w-full max-w-md bg-white rounded-3xl p-8 border border-[#00336E] shadow-lg hover:shadow-xl transition-all duration-300">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-display font-bold text-[#00336E] mb-2">
+    <main className="min-h-screen pt-20 sm:pt-24 pb-10 sm:pb-12 flex items-center justify-center px-4 sm:px-6 bg-slate-50">
+      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 border border-[#00336E] shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl font-display font-bold text-[#00336E] mb-2">
             Verify OTP
           </h1>
-          <p className="text-[#769ECC] font-medium text-lg">
+          <p className="text-[#769ECC] font-medium text-base sm:text-lg">
             Enter the OTP sent to your email
           </p>
         </div>
 
-        <form className="space-y-5" onSubmit={handleVerify}>
+        <form className="space-y-5 sm:space-y-6" onSubmit={handleVerify}>
           {error && (
             <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg">
               {error}
@@ -121,7 +121,7 @@ export default function OtpClient() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="hello@example.com"
               required
-              className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
+              className="w-full px-4 sm:px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
             />
           </div>
 

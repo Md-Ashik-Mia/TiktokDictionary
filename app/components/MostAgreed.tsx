@@ -82,11 +82,11 @@ export const MostAgreed = () => {
     <div className="w-full">
       <div className="">
         {/* Heading + description */}
-        <h2 className="font-display font-bold lg:text-6xl md:text-[3.2rem] leading-none text-[#00336E]">
+        <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-[3.2rem] lg:text-6xl leading-none text-[#00336E]">
           Most Agreed Definitions
         </h2>
 
-        <p className="my-4 font-sans text-lg text-[#00336E]">
+        <p className="my-4 font-sans text-base sm:text-lg text-[#00336E]">
           Definitions voted accurate by the community.
         </p>
 

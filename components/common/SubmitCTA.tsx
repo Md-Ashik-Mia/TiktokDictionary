@@ -6,7 +6,7 @@ export const SubmitCTA = () => {
     <section className="bg-brand-dark text-white py-20 ">
       <div className="max-w-3xl mx-auto text-center px-6">
 
-        <h2 className="font-display text-4xl sm:text-5xl md:text-[2.8rem] font-bold mb-3">
+        <h2 className="font-display text-4xl sm:text-[2.8rem] md:text-[3rem] font-bold mb-3">
           Submit a Word
         </h2>
 
