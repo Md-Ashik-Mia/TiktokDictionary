@@ -40,6 +40,9 @@ export const api = axios.create({
 /** Regular user API */
 export const userApi = axios.create({
   baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // Alias (some pages/imports expect this exact name)

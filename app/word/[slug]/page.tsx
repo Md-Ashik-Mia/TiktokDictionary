@@ -50,6 +50,10 @@ type UserResponseRecord = {
   user?: number | string;
 };
 
+function asAxiosError(err: unknown): { response?: { status?: number; data?: unknown } } {
+  return err as { response?: { status?: number; data?: unknown } };
+}
+
 type ApiDefinition = {
   id: number;
   definition: string;
@@ -190,6 +194,13 @@ export default function WordDetailPage({
   const [myReactions, setMyReactions] = useState<Record<number, UserReaction>>({});
   const myUserId = useMemo(() => getStoredUserId(), []);
 
+  async function refetchWordById(wordId: number) {
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    const client = token ? userApi : api;
+    const res = await client.post<unknown>("dictionary/get-words/", { word_id: wordId });
+    setWordData(unwrapWordResponse(res.data));
+  }
+
   const [meaning, setMeaning] = useState("");
   const [meaningError, setMeaningError] = useState("");
   const [isSubmittingMeaning, setIsSubmittingMeaning] = useState(false);
@@ -201,7 +212,9 @@ export default function WordDetailPage({
     const controller = new AbortController();
 
     async function fetchById(wordId: number) {
-      const res = await api.post<unknown>(
+      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+      const client = token ? userApi : api;
+      const res = await client.post<unknown>(
         "dictionary/get-words/",
         { word_id: wordId },
         { signal: controller.signal }
@@ -318,7 +331,7 @@ export default function WordDetailPage({
 
     async function loadMyReactions() {
       const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-      if (!token || !myUserId) return;
+      if (!token) return;
       const ids = new Set(definitions.map((d) => d.id));
       if (ids.size === 0) return;
 
@@ -332,7 +345,6 @@ export default function WordDetailPage({
         for (const r of list) {
           if (!r || typeof r.definition !== "number") continue;
           if (!ids.has(r.definition)) continue;
-          if (!isSameUser(r.user, myUserId)) continue;
 
           const prev = byDef[r.definition];
           const prevTs = prev?.createdAt ? Date.parse(prev.createdAt) : Number.NaN;
@@ -365,7 +377,7 @@ export default function WordDetailPage({
       alive = false;
       controller.abort();
     };
-  }, [definitions, myUserId]);
+  }, [definitions]);
 
   function commitReactionId(definitionId: number, responseId: number) {
     setMyReactions((prev) => {
@@ -404,12 +416,20 @@ export default function WordDetailPage({
     });
   }
 
-  async function upsertReaction(definitionId: number, next: UserReaction) {
+  async function upsertReaction(
+    definitionId: number,
+    next: UserReaction,
+    kind: "like" | "dislike"
+  ) {
     const payload = {
       definition: definitionId,
+      // Some backend endpoints in this project use the misspelling "definations".
+      // Sending both keys keeps the client compatible if the reactions serializer expects "defination".
+      defination: definitionId,
       is_like: next.is_like,
       is_dislike: next.is_dislike,
-      "comments_text": "",
+      // Backend appears to expect a non-empty string (your Postman example includes it).
+      comments_text: kind === "like" ? "liked" : "disliked",
     };
 
     // Prefer PATCH if we know an existing response id; fall back to POST.
@@ -422,8 +442,45 @@ export default function WordDetailPage({
       }
     }
 
-    const res = await userApi.post<UserResponseRecord>("user-response/responses/", payload);
-    return typeof res.data?.id === "number" ? res.data.id : undefined;
+    // If backend enforces uniqueness (user+definition), POST can 400/409 if it already exists.
+    try {
+      const res = await userApi.post<UserResponseRecord>("user-response/responses/", payload);
+      return typeof res.data?.id === "number" ? res.data.id : undefined;
+    } catch (err: unknown) {
+      const status = asAxiosError(err)?.response?.status;
+      // Best-effort: find existing response id and PATCH it.
+      if (status === 400 || status === 409) {
+        try {
+          const res = await userApi.get<UserResponseRecord[]>("user-response/responses/");
+          const list = Array.isArray(res.data) ? res.data : [];
+          const matches = list.filter((r) => r?.definition === definitionId);
+          const filtered =
+            myUserId == null
+              ? matches
+              : matches.filter((r) => isSameUser(r.user, myUserId));
+
+          const pick = filtered
+            .slice()
+            .sort((a, b) => {
+              const at = a.created_at ? Date.parse(a.created_at) : Number.NaN;
+              const bt = b.created_at ? Date.parse(b.created_at) : Number.NaN;
+              if (!Number.isFinite(at) && !Number.isFinite(bt)) return 0;
+              if (!Number.isFinite(at)) return 1;
+              if (!Number.isFinite(bt)) return -1;
+              return bt - at;
+            })[0];
+
+          if (pick?.id) {
+            await userApi.patch(`user-response/responses/${pick.id}/`, payload);
+            return pick.id;
+          }
+        } catch {
+          // ignore; rethrow original below
+        }
+      }
+
+      throw err;
+    }
   }
 
   function applyOptimisticReaction(definitionId: number, next: UserReaction) {
@@ -478,7 +535,7 @@ export default function WordDetailPage({
 
   async function handleReactionClick(definitionId: number, kind: "like" | "dislike") {
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-    if (!token || !myUserId) {
+    if (!token) {
       // Not logged in; require token.
       window.location.href = "/login";
       return;
@@ -488,17 +545,35 @@ export default function WordDetailPage({
     const togglingOff =
       (kind === "like" && current?.is_like) || (kind === "dislike" && current?.is_dislike);
 
+    // If backend doesn't support clearing a reaction (both false), avoid sending an invalid payload.
+    if (togglingOff) return;
+
     const next: UserReaction = {
       responseId: current?.responseId,
-      is_like: togglingOff ? false : kind === "like",
-      is_dislike: togglingOff ? false : kind === "dislike",
+      is_like: kind === "like",
+      is_dislike: kind === "dislike",
     };
 
     applyOptimisticReaction(definitionId, next);
     try {
-      const responseId = await upsertReaction(definitionId, next);
+      const responseId = await upsertReaction(definitionId, next, kind);
       if (typeof responseId === "number") commitReactionId(definitionId, responseId);
-    } catch {
+
+      // Refetch word details so server-updated counts/responses are reflected in UI.
+      const wordId = wordData?.id;
+      if (wordId) {
+        try {
+          await refetchWordById(wordId);
+        } catch {
+          // Keep optimistic state if refetch fails.
+        }
+      }
+    } catch (err: unknown) {
+      const ax = asAxiosError(err);
+      // Make the backend validation error visible in the console.
+      // This is crucial to align the UI payload with what the API expects.
+      // eslint-disable-next-line no-console
+      console.error("Reaction request failed", ax?.response?.status, ax?.response?.data ?? err);
       // Revert on failure.
       applyOptimisticReaction(definitionId, current ?? { is_like: false, is_dislike: false });
     }
