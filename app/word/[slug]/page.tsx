@@ -34,6 +34,7 @@ type ApiResponseItem = {
 
 type UserReaction = {
   responseId?: number;
+  createdAt?: string;
   is_like: boolean;
   is_dislike: boolean;
 };
@@ -316,7 +317,8 @@ export default function WordDetailPage({
     const controller = new AbortController();
 
     async function loadMyReactions() {
-      if (!myUserId) return;
+      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+      if (!token || !myUserId) return;
       const ids = new Set(definitions.map((d) => d.id));
       if (ids.size === 0) return;
 
@@ -333,12 +335,18 @@ export default function WordDetailPage({
           if (!isSameUser(r.user, myUserId)) continue;
 
           const prev = byDef[r.definition];
-          const prevTime = prev?.responseId ? 1 : 0;
-          const nextTime = r.created_at ? Date.parse(r.created_at) : 0;
+          const prevTs = prev?.createdAt ? Date.parse(prev.createdAt) : Number.NaN;
+          const nextTs = r.created_at ? Date.parse(r.created_at) : Number.NaN;
+
+          const shouldReplace =
+            !prev ||
+            (Number.isFinite(nextTs) && (!Number.isFinite(prevTs) || nextTs >= prevTs));
+
           // Prefer the most recent record if available.
-          if (!prev || nextTime >= prevTime) {
+          if (shouldReplace) {
             byDef[r.definition] = {
               responseId: r.id,
+              createdAt: r.created_at,
               is_like: !!r.is_like,
               is_dislike: !!r.is_dislike,
             };
@@ -359,6 +367,43 @@ export default function WordDetailPage({
     };
   }, [definitions, myUserId]);
 
+  function commitReactionId(definitionId: number, responseId: number) {
+    setMyReactions((prev) => {
+      const current = prev[definitionId];
+      if (!current) return prev;
+      if (current.responseId === responseId) return prev;
+      return {
+        ...prev,
+        [definitionId]: {
+          ...current,
+          responseId,
+        },
+      };
+    });
+
+    setWordData((prev) => {
+      if (!prev) return prev;
+      const defs = (prev.definitions ?? prev.definations ?? []).map((d) => {
+        if (d.id !== definitionId) return d;
+        const responses = Array.isArray(d.responses) ? [...d.responses] : [];
+        const idx = responses.findIndex((r) => isSameUser(r.user, myUserId));
+        if (idx >= 0) {
+          responses[idx] = {
+            ...responses[idx],
+            id: responseId,
+          };
+        }
+        return { ...d, responses };
+      });
+
+      return {
+        ...prev,
+        definitions: prev.definitions ? defs : prev.definitions,
+        definations: prev.definations ? defs : prev.definations,
+      };
+    });
+  }
+
   async function upsertReaction(definitionId: number, next: UserReaction) {
     const payload = {
       definition: definitionId,
@@ -371,13 +416,14 @@ export default function WordDetailPage({
     if (next.responseId) {
       try {
         await userApi.patch(`user-response/responses/${next.responseId}/`, payload);
-        return;
+        return next.responseId;
       } catch {
         // fall through
       }
     }
 
-    await userApi.post("user-response/responses/", payload);
+    const res = await userApi.post<UserResponseRecord>("user-response/responses/", payload);
+    return typeof res.data?.id === "number" ? res.data.id : undefined;
   }
 
   function applyOptimisticReaction(definitionId: number, next: UserReaction) {
@@ -403,7 +449,7 @@ export default function WordDetailPage({
             id: next.responseId ?? -Date.now(),
             is_like: next.is_like,
             is_dislike: next.is_dislike,
-            user: myUserId ?? "me",
+            user: myUserId ?? undefined,
           });
         }
         return { ...d, responses };
@@ -431,8 +477,9 @@ export default function WordDetailPage({
   }
 
   async function handleReactionClick(definitionId: number, kind: "like" | "dislike") {
-    if (!myUserId) {
-      // Not logged in; userApi will redirect on 401.
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    if (!token || !myUserId) {
+      // Not logged in; require token.
       window.location.href = "/login";
       return;
     }
@@ -449,7 +496,8 @@ export default function WordDetailPage({
 
     applyOptimisticReaction(definitionId, next);
     try {
-      await upsertReaction(definitionId, next);
+      const responseId = await upsertReaction(definitionId, next);
+      if (typeof responseId === "number") commitReactionId(definitionId, responseId);
     } catch {
       // Revert on failure.
       applyOptimisticReaction(definitionId, current ?? { is_like: false, is_dislike: false });
@@ -495,6 +543,12 @@ export default function WordDetailPage({
     const trimmed = meaning.trim();
     if (!trimmed) return;
     setMeaningError("");
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
 
     const wordId = wordData?.id;
     if (!wordId) {

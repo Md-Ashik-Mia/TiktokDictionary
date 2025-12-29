@@ -8,7 +8,7 @@ import { useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await api.post("user_auth/login/", { email, password });
+      const response = await api.post("user_auth/login/", { username, password });
       const res = response.data;
 
       // Store tokens and user info
@@ -71,17 +71,17 @@ export default function LoginPage() {
           )}
           <div className="space-y-2">
             <label
-              htmlFor="email"
+              htmlFor="username"
               className="block text-sm font-bold text-[#00336E] ml-1"
             >
-              Email
+              Username
             </label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="hello@example.com"
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username"
               required
               className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
             />
@@ -95,12 +95,6 @@ export default function LoginPage() {
               >
                 Password
               </label>
-              <Link
-                href="/forgot-password"
-                className="text-xs font-bold text-[#769ECC] hover:text-[#00336E] transition-colors"
-              >
-                Forgot Password?
-              </Link>
             </div>
             <input
               id="password"

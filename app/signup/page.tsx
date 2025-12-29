@@ -9,7 +9,6 @@ import { useState } from "react";
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
     password: "",
   });
@@ -23,7 +22,7 @@ export default function SignupPage() {
 
     try {
       await api.post("user_auth/register/", formData);
-      router.push(`/otp?email=${encodeURIComponent(formData.email.trim())}`);
+      router.push("/login");
     } catch (err: unknown) {
       const maybeErr = err as {
         response?: { data?: { message?: string; error?: string } };
@@ -55,24 +54,6 @@ export default function SignupPage() {
               {error}
             </div>
           )}
-          <div className="space-y-2">
-            <label
-              htmlFor="username"
-              className="block text-sm font-bold text-[#00336E] ml-1"
-            >
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              placeholder="CoolUser123"
-              required
-              className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-[#00336E] focus:ring-1 focus:ring-[#00336E] outline-none transition-all placeholder:text-slate-400 text-[#00336E] font-medium"
-            />
-          </div>
-
           <div className="space-y-2">
             <label
               htmlFor="email"

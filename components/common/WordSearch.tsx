@@ -138,7 +138,7 @@ export function WordSearch({ placeholder }: { placeholder?: string }) {
     setActiveIndex(-1);
     const slug = wordToSlug(word);
     router.push(
-      id ? `/word/${slug}?word_id=${encodeURIComponent(String(id))}` : `/word/${slug}`
+      id ? `/word/${slug}?id=${encodeURIComponent(String(id))}` : `/word/${slug}`
     );
   }
 
