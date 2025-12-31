@@ -196,7 +196,7 @@ export default function SignupPage() {
 
     try {
       await api.post("user_auth/register/", formData);
-      router.push("/");
+      router.push("/login");
       router.refresh();
     } catch (err: unknown) {
       const maybeErr = err as {

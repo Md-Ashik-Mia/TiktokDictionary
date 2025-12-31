@@ -9,8 +9,8 @@ import { useSearchParams } from "next/navigation";
 import React, { use, useEffect, useMemo, useState } from "react";
 import { AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
 import {
-    FiChevronRight,
-    FiX,
+  FiChevronRight,
+  FiX,
 } from "react-icons/fi";
 import { MdInfo } from "react-icons/md";
 
@@ -22,6 +22,7 @@ type AltDef = {
   dislikes: number;
   isLikedByMe: boolean;
   isDislikedByMe: boolean;
+  status?: string;
 };
 
 type ApiResponseItem = {
@@ -60,6 +61,7 @@ type ApiDefinition = {
   example_sentence?: string;
   responses?: ApiResponseItem[];
   created_at?: string;
+   status?: string;
 };
 
 type ApiWord = {
@@ -103,6 +105,7 @@ type CreateDefinitionResponse = {
 function isApiWord(value: unknown): value is ApiWord {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
+  console.log("isApiWord check",v);
   return (
     typeof v.id === "number" &&
     typeof v.word === "string" &&
@@ -114,6 +117,7 @@ function unwrapWordResponse(data: unknown): ApiWord | null {
   if (!data || typeof data !== "object") return null;
   const maybe = data as Record<string, unknown>;
   const results = maybe.results;
+  // console.log("unwrapWordResponse data",maybe);
   if (Array.isArray(results) && results.length > 0) {
     const first = results[0];
     if (isApiWord(first)) return first;
@@ -213,16 +217,22 @@ export default function WordDetailPage({
 
     async function fetchById(wordId: number) {
       const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+      console.log("token",token);
+      token ?console.log("token is present"):console.log("token is absent");
       const client = token ? userApi : api;
       const res = await client.post<unknown>(
         "dictionary/get-words/",
         { word_id: wordId },
         { signal: controller.signal }
       );
+
+      console.log("response data",res.data);
       return unwrapWordResponse(res.data);
     }
 
     async function resolveIdBySearch(search: string) {
+       const token = localStorage.getItem("accessToken");
+       console.log("token",token);
       const res = await api.get<GetWordsResponse>("dictionary/get-words/", {
         params: { search },
         signal: controller.signal,
@@ -305,6 +315,8 @@ export default function WordDetailPage({
 
   const mainLikedByMe = mainDefId ? myReactions[mainDefId]?.is_like === true : false;
   const mainDislikedByMe = mainDefId ? myReactions[mainDefId]?.is_dislike === true : false;
+  const statusForFristDefination = wordData?.definitions?.[0]?.status;
+  console.log("statusForFristDefination ", statusForFristDefination);
 
   const altDefs: AltDef[] = useMemo(() => {
     const defs = definitions;
@@ -313,11 +325,13 @@ export default function WordDetailPage({
     return defs.slice(0, 4).map((d) => {
       const { likes, dislikes } = countLikesDislikes(d);
       const mine = myReactions[d.id];
+      console.log("this is a final d ", d);
       return {
         id: d.id,
         text: d.definition,
         likes,
         dislikes,
+        status: d.status,
         isLikedByMe: mine?.is_like === true,
         isDislikedByMe: mine?.is_dislike === true,
       };
@@ -667,6 +681,9 @@ export default function WordDetailPage({
   };
 
   const modalCountUser = submittedMeaning?.count_user ?? 0;
+  console.log("word data is " ,wordData);
+  console.log("definitions are " ,definitions);
+  console.log("alternative defination  " ,altDefs);
 
   return (
     <main className="min-h-screen flex flex-col bg-white text-[#0f2d5c]">
@@ -729,8 +746,8 @@ export default function WordDetailPage({
                 <button
                   type="button"
                   onClick={() => (mainDefId ? handleReactionClick(mainDefId, "like") : undefined)}
-                  className={`inline-flex font-bold items-center gap-1 text-sm ${
-                    mainLikedByMe ? "text-[#00336E]" : "text-[#000000]"
+                  className={`inline-flex font-bold items-center gap-1 text-2xl ${
+                    statusForFristDefination === "liked" ? "text-teal-700" : "text-[#00336E]"
                   }`}
                 >
                   <AiOutlineLike /> {displayLikes.toLocaleString()}
@@ -738,8 +755,8 @@ export default function WordDetailPage({
                 <button
                   type="button"
                   onClick={() => (mainDefId ? handleReactionClick(mainDefId, "dislike") : undefined)}
-                  className={`inline-flex font-bold items-center gap-1 text-sm ${
-                    mainDislikedByMe ? "text-[#00336E]" : "text-[#000000]"
+                  className={`inline-flex font-bold items-center gap-1 text-2xl ${
+                    statusForFristDefination === "disliked" ? "text-red-700" : "text-[#00336E]"
                   }`}
                 >
                   <AiOutlineDislike /> {displayDislikes.toLocaleString()}
@@ -760,6 +777,8 @@ export default function WordDetailPage({
             {altDefs.length === 0 ? (
               <div className="text-sm text-slate-500">No definitions yet.</div>
             ) : null}
+
+            {/* {console.log("alter native definations",altDefs)} */}
             {altDefs.map((item) => (
               <div
                 key={item.id}
@@ -772,8 +791,8 @@ export default function WordDetailPage({
                   <button
                     type="button"
                     onClick={() => (item.id > 0 ? handleReactionClick(item.id, "like") : undefined)}
-                    className={`inline-flex text-sm font-bold items-center gap-1 ${
-                      item.isLikedByMe ? "text-[#00336E]" : "text-[#0f2d5c]"
+                    className={`inline-flex text-2xl font-bold items-center gap-1 ${
+                      item.status=== "liked" ? "font-bold text-teal-700 " : "text-[#0f2d5c]"
                     }`}
                   >
                     <AiOutlineLike /> {item.likes}
@@ -783,8 +802,8 @@ export default function WordDetailPage({
                     onClick={() =>
                       item.id > 0 ? handleReactionClick(item.id, "dislike") : undefined
                     }
-                    className={`inline-flex text-sm font-bold items-center gap-1 ${
-                      item.isDislikedByMe ? "text-[#00336E]" : "text-[#0f2d5c]"
+                    className={`inline-flex text-2xl font-bold items-center gap-1 ${
+                      item.status === "disliked" ? "text-red-700" : "text-[#0f2d5c]"
                     }`}
                   >
                     <AiOutlineDislike /> {item.dislikes}
