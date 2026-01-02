@@ -150,6 +150,25 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const saveSession = (res: {
+    access?: string;
+    refresh?: string;
+    id?: number;
+    username?: string;
+  }) => {
+    if (res.access) localStorage.setItem("accessToken", res.access);
+    if (res.refresh) localStorage.setItem("refreshToken", res.refresh);
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        id: res.id,
+        username: res.username,
+      })
+    );
+    // Notify listeners like Navbar that auth changed immediately.
+    window.dispatchEvent(new Event("storage"));
+  };
+
   /* ---------- CAPTCHA STATE ---------- */
   const [isHuman, setIsHuman] = useState(false);
   const [captchaLoaded, setCaptchaLoaded] = useState(false);
@@ -196,7 +215,12 @@ export default function SignupPage() {
 
     try {
       await api.post("user_auth/register/", formData);
-      router.push("/login");
+
+      const loginResponse = await api.post("user_auth/login/", formData);
+      const res = loginResponse.data;
+      saveSession(res);
+
+      router.push("/");
       router.refresh();
     } catch (err: unknown) {
       const maybeErr = err as {
@@ -207,7 +231,7 @@ export default function SignupPage() {
         maybeErr.response?.data?.message ||
           maybeErr.response?.data?.error ||
           maybeErr.message ||
-          "Signup failed. Please try again."
+          "Signup or auto-login failed. Please try again."
       );
     } finally {
       setIsLoading(false);
