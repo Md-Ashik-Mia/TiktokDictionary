@@ -2,11 +2,13 @@
 
 import { api } from "@/lib/https";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { IoIosArrowDropleft, IoIosArrowDropright } from "react-icons/io";
 
 type MemeCard = {
   word: string;
   tag: string;
+  wordId?: number;
 };
 
 type MemeApiDefinition = {
@@ -17,6 +19,7 @@ type MemeApiDefinition = {
 
 type MemeApiItem = {
   word?: string;
+  word_id?: number;
   category?: string;
   total_likes?: number | string;
   definition?: MemeApiDefinition[] | MemeApiDefinition;
@@ -30,7 +33,13 @@ function toSafeCount(value: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function wordToSlug(word: string) {
+  const normalized = word.trim().replace(/\s+/g, "-");
+  return encodeURIComponent(normalized);
+}
+
 export const MemeSection = () => {
+  const router = useRouter();
   const [memeIndex, setMemeIndex] = useState(0);
   const [items, setItems] = useState<MemeCard[]>([]);
 
@@ -82,13 +91,14 @@ export const MemeSection = () => {
         const mapped: MemeCard[] = list
           .map((payload) => {
             const word = typeof payload?.word === "string" ? payload.word.trim() : "";
+            const wordId = typeof payload?.word_id === "number" ? payload.word_id : undefined;
             const category = typeof payload?.category === "string" ? payload.category.trim() : "";
             const likes = toSafeCount(payload?.total_likes);
             const tag = (category || "Meme").toUpperCase();
 
             // If backend doesn't provide a category, keep a meaningful fallback.
             const safeTag = tag === "MEME" && likes > 0 ? "MEME" : tag;
-            return { word, tag: safeTag };
+            return { word, tag: safeTag, wordId };
           })
           .filter((x) => x.word.trim().length > 0);
 
@@ -143,7 +153,32 @@ export const MemeSection = () => {
           {visible.map((item, i) => (
             <article
               key={`${item.word}-${i}`}
-              className="rounded-[18px] border border-[#00336E] bg-transparent p-6 flex flex-col justify-between min-h-[108px]"
+              className="rounded-[18px] border border-[#00336E] bg-transparent p-6 flex flex-col justify-between min-h-[108px] cursor-pointer"
+              role="link"
+              tabIndex={0}
+              onClick={() => {
+                const trimmed = item.word.trim();
+                if (!trimmed) return;
+                const slug = wordToSlug(trimmed);
+                router.push(
+                  typeof item.wordId === "number"
+                    ? `/word/${slug}?id=${encodeURIComponent(String(item.wordId))}`
+                    : `/word/${slug}`
+                );
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  const trimmed = item.word.trim();
+                  if (!trimmed) return;
+                  const slug = wordToSlug(trimmed);
+                  router.push(
+                    typeof item.wordId === "number"
+                      ? `/word/${slug}?id=${encodeURIComponent(String(item.wordId))}`
+                      : `/word/${slug}`
+                  );
+                }
+              }}
             >
               <h3 className="font-display font-bold text-2xl text-[#000000] leading-tight">
                 {item.word}

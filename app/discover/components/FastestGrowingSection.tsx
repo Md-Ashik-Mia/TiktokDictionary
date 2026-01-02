@@ -2,6 +2,7 @@
 
 import { api } from "@/lib/https";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { HiArrowTrendingUp } from "react-icons/hi2";
 import { IoIosArrowDropleft, IoIosArrowDropright } from "react-icons/io";
 
@@ -9,10 +10,12 @@ type FastestGrowingItem = {
   word: string;
   change: string;
   tag: string;
+  wordId?: number;
 };
 
 type FastestGrowingApiItem = {
   word?: string;
+  word_id?: number;
   current_likes?: number;
   previous_likes?: number;
   category?: string;
@@ -27,7 +30,13 @@ function formatGrowthRate(value: number): string {
   return rounded > 0 ? `+${rounded}%` : `${rounded}%`;
 }
 
+function wordToSlug(word: string) {
+  const normalized = word.trim().replace(/\s+/g, "-");
+  return encodeURIComponent(normalized);
+}
+
 export const FastestGrowingSection = () => {
+  const router = useRouter();
   const [fastestIndex, setFastestIndex] = useState(0);
   const [items, setItems] = useState<FastestGrowingItem[]>([]);
 
@@ -67,18 +76,20 @@ export const FastestGrowingSection = () => {
         const mapped = data
           .map((meta) => {
             const word = typeof meta?.word === "string" ? meta.word.trim() : "";
+            const wordId = typeof meta?.word_id === "number" ? meta.word_id : undefined;
             const category = typeof meta?.category === "string" ? meta.category.trim() : "";
             const growthRate = typeof meta?.growth_rate === "number" ? meta.growth_rate : 0;
             return {
               word,
               change: formatGrowthRate(growthRate),
               tag: category || "—",
+              wordId,
               growthRate,
             };
           })
           .filter((x) => Boolean(x.word))
           .sort((a, b) => (b.growthRate ?? 0) - (a.growthRate ?? 0))
-          .map((item) => ({ word: item.word, change: item.change, tag: item.tag }));
+          .map((item) => ({ word: item.word, change: item.change, tag: item.tag, wordId: item.wordId }));
 
         if (!alive) return;
         setItems(mapped);
@@ -98,6 +109,17 @@ export const FastestGrowingSection = () => {
   }, []);
 
   const canSlide = items.length > 1;
+
+  function navigateToWord(word: string, wordId?: number) {
+    const trimmed = word.trim();
+    if (!trimmed) return;
+    const slug = wordToSlug(trimmed);
+    router.push(
+      typeof wordId === "number"
+        ? `/word/${slug}?id=${encodeURIComponent(String(wordId))}`
+        : `/word/${slug}`
+    );
+  }
 
   return (
     <section className="bg-[#EFF6FE] py-16">
@@ -130,7 +152,16 @@ export const FastestGrowingSection = () => {
             : getVisibleItems(items, fastestIndex, Math.min(3, items.length)).map((item, i) => (
             <article
               key={`${item.word}-${i}`}
-              className="rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col justify-between hover:shadow-md transition-all"
+              className="rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col justify-between hover:shadow-md transition-all cursor-pointer"
+              role="link"
+              tabIndex={0}
+              onClick={() => navigateToWord(item.word, item.wordId)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigateToWord(item.word, item.wordId);
+                }
+              }}
             >
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-display font-bold text-2xl text-[#000000]">

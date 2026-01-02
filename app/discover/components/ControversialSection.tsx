@@ -2,6 +2,7 @@
 
 import { api } from "@/lib/https";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
 
 type ControversialCard = {
@@ -9,6 +10,7 @@ type ControversialCard = {
   reason: string;
   likes: number;
   dislikes: number;
+  wordId?: number;
 };
 
 type ControversialApiDefinitionStats = {
@@ -19,6 +21,7 @@ type ControversialApiDefinitionStats = {
 
 type ControversialApiItem = {
   word?: string;
+  word_id?: number;
   total_likes?: number | string;
   total_dislikes?: number | string;
   definitions?: ControversialApiDefinitionStats[];
@@ -32,7 +35,13 @@ function toSafeCount(value: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function wordToSlug(word: string) {
+  const normalized = word.trim().replace(/\s+/g, "-");
+  return encodeURIComponent(normalized);
+}
+
 export const ControversialSection = () => {
+  const router = useRouter();
   const [items, setItems] = useState<ControversialCard[]>([]);
 
   useEffect(() => {
@@ -51,6 +60,7 @@ export const ControversialSection = () => {
         const mapped: ControversialCard[] = data
           .map((payload) => {
             const word = typeof payload?.word === "string" ? payload.word.trim() : "";
+            const wordId = typeof payload?.word_id === "number" ? payload.word_id : undefined;
             const topDef = Array.isArray(payload?.definitions) ? payload.definitions[0] : undefined;
 
             const totalLikes = toSafeCount(payload?.total_likes);
@@ -62,7 +72,7 @@ export const ControversialSection = () => {
                 ? topDef.definition.trim()
                 : "Highly debated meaning";
 
-            return { word, reason, likes, dislikes };
+            return { word, reason, likes, dislikes, wordId };
           })
           .filter((x) => x.word.length > 0);
 
@@ -90,7 +100,32 @@ export const ControversialSection = () => {
         {items.map((item) => (
           <article
             key={item.word}
-            className=" rounded-[24px] border border-[#00336E] bg-white p-6 hover:shadow-md transition-all"
+            className=" rounded-[24px] border border-[#00336E] bg-white p-6 hover:shadow-md transition-all cursor-pointer"
+            role="link"
+            tabIndex={0}
+            onClick={() => {
+              const trimmed = item.word.trim();
+              if (!trimmed) return;
+              const slug = wordToSlug(trimmed);
+              router.push(
+                typeof item.wordId === "number"
+                  ? `/word/${slug}?id=${encodeURIComponent(String(item.wordId))}`
+                  : `/word/${slug}`
+              );
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                const trimmed = item.word.trim();
+                if (!trimmed) return;
+                const slug = wordToSlug(trimmed);
+                router.push(
+                  typeof item.wordId === "number"
+                    ? `/word/${slug}?id=${encodeURIComponent(String(item.wordId))}`
+                    : `/word/${slug}`
+                );
+              }
+            }}
           >
             <h3 className="font-display font-bold text-2xl text-[#000000] mb-2">
               {item.word}

@@ -2,9 +2,10 @@
 
 import { api } from "@/lib/https";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const subcultureFilters: string[] = [];
-const subcultureWords: Array<{ word: string; tag: string }> = [];
+const subcultureWords: Array<{ word: string; tag: string; id?: number }> = [];
 
 type HashtagsResponse = {
   hashtags: string[];
@@ -42,6 +43,7 @@ function toDisplayTag(raw: string) {
 }
 
 export const SubcultureSection = () => {
+  const router = useRouter();
   const [tags, setTags] = useState<string[]>(subcultureFilters);
   const [subcultureFilter, setSubcultureFilter] = useState("");
   const [words, setWords] = useState(subcultureWords);
@@ -124,6 +126,7 @@ export const SubcultureSection = () => {
             const tag = w?.category?.name ? toDisplayTag(w.category.name) : label;
             return {
               word: w.word,
+              id: typeof w?.id === "number" ? w.id : undefined,
               tag,
             };
           })
@@ -173,7 +176,34 @@ export const SubcultureSection = () => {
         {words.map((item) => (
           <article
             key={item.word}
-            className="rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col justify-between min-h-[140px] hover:shadow-md transition-all"
+            className="rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col justify-between min-h-[140px] hover:shadow-md transition-all cursor-pointer"
+            role="link"
+            tabIndex={0}
+            onClick={() => {
+              const trimmed = item.word.trim();
+              if (!trimmed) return;
+              const slug = trimmed.replace(/\s+/g, "-");
+              const encodedSlug = encodeURIComponent(slug);
+              router.push(
+                typeof item.id === "number"
+                  ? `/word/${encodedSlug}?id=${encodeURIComponent(String(item.id))}`
+                  : `/word/${encodedSlug}`
+              );
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                const trimmed = item.word.trim();
+                if (!trimmed) return;
+                const slug = trimmed.replace(/\s+/g, "-");
+                const encodedSlug = encodeURIComponent(slug);
+                router.push(
+                  typeof item.id === "number"
+                    ? `/word/${encodedSlug}?id=${encodeURIComponent(String(item.id))}`
+                    : `/word/${encodedSlug}`
+                );
+              }
+            }}
           >
             <h3 className="font-display font-bold text-2xl text-[#000000]">
               {item.word}
