@@ -1,8 +1,8 @@
 "use client";
 
 import { api } from "@/lib/https";
-import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 const subcultureFilters: string[] = [];
 const subcultureWords: Array<{ word: string; tag: string; id?: number }> = [];

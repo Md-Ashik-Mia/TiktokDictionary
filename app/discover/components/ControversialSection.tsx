@@ -1,8 +1,8 @@
 "use client";
 
 import { api } from "@/lib/https";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
 
 type ControversialCard = {
