@@ -51,8 +51,10 @@ export function Navbar() {
       </Link>
 
       <nav className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-6 text-sm sm:text-base">
+        <Link href="/">Home</Link>
         <Link href="/discover">Discover</Link>
         <Link href="/submit">Submit</Link>
+
       </nav>
 
       {user ? (

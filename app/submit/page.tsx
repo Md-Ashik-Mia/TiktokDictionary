@@ -667,14 +667,14 @@ export default function SubmitPage() {
           >
             {/* WORD */}
             <div className="relative">
-              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#00336E]">
+              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#000000]">
                 Word
               </div>
               <div className={singleLineField}>
                 <input
                   value={word}
                   onChange={(e) => setWord(e.target.value)}
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#9D9D9D]"
                   placeholder="Enter the word or phrase"
                 />
               </div>
@@ -682,9 +682,9 @@ export default function SubmitPage() {
 
             {/* DEFINITION (single-line pill like Figma) */}
             <div className="relative">
-              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#00336E]">
-                Definition{" "}
-                <span className="font-normal text-[#5874a8]">
+              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#000000]">
+                <span>Defination</span>
+                <span className="font-normal text-[#9D9D9D]">
                   (Helps us verify and track trend origin)
                 </span>
               </div>
@@ -692,21 +692,21 @@ export default function SubmitPage() {
                 <input
                   value={definition}
                   onChange={(e) => setDefinition(e.target.value)}
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#9D9D9D]"
                   placeholder="Write the clearest, simplest definition. Avoid long explanations."
                 />
               </div>
             </div>
             {/* EXAMPLE SENTENCE – same height as other fields */}
             <div className="relative md:col-span-2">
-              <div className="absolute -top-3 left-6 bg-white px-2  text-[11px] font-semibold text-[#00336E]">
+              <div className="absolute -top-3 left-6 bg-white px-2  text-[11px] font-semibold text-[#000000]">
                 Example Sentence
               </div>
               <div className={singleLineField}>
                 <textarea
                   value={exampleSentence}
                   onChange={(e) => setExampleSentence(e.target.value)}
-                  className="w-full h-full pt-4 bg-transparent text-sm outline-none placeholder:text-[#9FB0D0] resize-none"
+                  className="w-full h-full pt-4 bg-transparent text-sm outline-none placeholder:text-[#9D9D9D] resize-none"
                   placeholder="Use the word in a real sentence"
                   rows={1}
                 />
@@ -716,7 +716,7 @@ export default function SubmitPage() {
             {/* CATEGORY SELECT – legend style like Figma */}
             <div className="relative">
               {/* label sitting on the top border */}
-              <span className="pointer-events-none absolute -top-2 left-7 bg-white px-1.5 text-[13px] font-semibold text-[#00336E]">
+              <span className="pointer-events-none absolute -top-2 left-7 bg-white px-1.5 text-[13px] font-semibold text-[#000000]">
                 Category
               </span>
 
@@ -724,7 +724,7 @@ export default function SubmitPage() {
                 <select
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
-                  className="w-full bg-transparent text-sm outline-none appearance-none pr-6 text-[#00336E] placeholder:text-[#9FB0D0] border-none"
+                  className="w-full bg-transparent text-sm outline-none appearance-none pr-6 text-[#00336E] placeholder:text-[#9D9D9D] border-none"
                 >
                   <option>Slang</option>
                   <option>TikTok Trends</option>
@@ -739,15 +739,15 @@ export default function SubmitPage() {
 
             {/* WHERE DID YOU SEE THIS WORD */}
             <div className="relative">
-              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#00336E]">
+              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#000000]">
                 Where Did You See This Word?{" "}
-                <span className="font-normal text-[#5874a8]">(Optional)</span>
+                <span className="font-normal text-[#9D9D9D]">(Optional)</span>
               </div>
               <div className={singleLineField}>
                 <input
                   value={source}
                   onChange={(e) => setSource(e.target.value)}
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#9D9D9D]"
                   placeholder="Paste TikTok link (optional) (Helps us verify and track trend origin)"
                 />
               </div>
@@ -759,7 +759,7 @@ export default function SubmitPage() {
                 Category
               </div> */}
               <div className={`${singleLineField} justify-between`}>
-                <span className="text-sm text-[#00336E]">Category</span>
+                <span className="text-sm text-[#000000]">Category</span>
                 <div className="flex items-center gap-3 text-[12px] text-[#00336E]">
                   <span className={!isNsfw ? "font-semibold" : "opacity-70"}>
                     No
@@ -786,14 +786,14 @@ export default function SubmitPage() {
 
             {/* ALTERNATE SPELLINGS */}
             <div className="relative">
-              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#00336E]">
+              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#000000]">
                 Alternate Spellings
               </div>
               <div className={singleLineField}>
                 <input
                   value={alternateSpellingsRaw}
                   onChange={(e) => setAlternateSpellingsRaw(e.target.value)}
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#9D9D9D]"
                   placeholder="Add variations (optional)"
                 />
               </div>
@@ -801,14 +801,14 @@ export default function SubmitPage() {
 
             {/* HASHTAGS */}
             <div className="relative md:col-span-2">
-              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#00336E]">
+              <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#000000]">
                 Hashtags (Optional)
               </div>
               <div className={singleLineField}>
                 <input
                   value={hashtagsRaw}
                   onChange={(e) => setHashtagsRaw(e.target.value)}
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#9FB0D0]"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#9D9D9D]"
                   placeholder="Add relevant hashtags (e.g. #TikTokSlang #GenAlpha)"
                 />
               </div>
@@ -824,7 +824,7 @@ export default function SubmitPage() {
               >
                 {isSubmitting ? "Submitting..." : "Add Word ↗"}
               </Button>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-[#9D9D9D]">
                 By submitting, you agree your entry may be reviewed or edited.
               </p>
             </div>

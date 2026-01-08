@@ -22,7 +22,7 @@ export const FilterSection = ({
     <div className="max-w-6xl mx-auto px-6">
       <div className="flex flex-col md:flex-row gap-6">
         <div className="flex-1 flex flex-col gap-1.5 relative">
-          <label className="absolute z-50 bg-white -top-1.5 left-1 font-display text-xs font-bold text-[#00336E] ml-1 px-1.5">
+          <label className="absolute z-50 bg-white -top-1.5 left-1 font-display text-xs font-bold text-[#000000] ml-1 px-1.5">
             Sort by
           </label>
           <div className="relative">
@@ -39,7 +39,7 @@ export const FilterSection = ({
           </div>
         </div>
         <div className="flex-1 flex flex-col gap-1.5 relative">
-          <label className="absolute z-50 bg-white -top-1.5 left-1 font-display text-xs font-bold text-[#00336E] ml-1 px-1.5">
+          <label className="absolute z-50 bg-white -top-1.5 left-1 font-display text-xs font-bold text-[##000000] ml-1 px-1.5">
             Filter by:
           </label>
           <div className="relative">
