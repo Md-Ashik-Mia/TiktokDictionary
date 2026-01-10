@@ -39,6 +39,7 @@ export function Navbar() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
+    document.cookie = "accessToken=; Path=/; Max-Age=0; SameSite=Lax";
     setUser(null);
     window.dispatchEvent(new Event("storage"));
     router.refresh();
@@ -63,7 +64,7 @@ export function Navbar() {
           <Button
             onClick={handleLogout}
             variant="ghost"
-            className="text-sm font-sans border border-slate-300 bg-transparent !text-red-600 hover:bg-slate-100 hover:!text-red-700"
+            className="text-sm font-sans border border-slate-300 bg-transparent text-red-600! hover:bg-slate-100 hover:text-red-700!"
           >
             Logout
           </Button>

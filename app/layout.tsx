@@ -1,3 +1,4 @@
+import { ToastProvider } from "@/components/common/ToastProvider";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen overflow-x-hidden bg-[#f4f6fb] text-brand-dark antialiased font-sans">
+        <ToastProvider />
         {children}
       </body>
     </html>

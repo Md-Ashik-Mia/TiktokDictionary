@@ -108,9 +108,10 @@ export const ControversialSection = () => {
               if (!trimmed) return;
               const slug = wordToSlug(trimmed);
               router.push(
-                typeof item.wordId === "number"
-                  ? `/word/${slug}?id=${encodeURIComponent(String(item.wordId))}`
-                  : `/word/${slug}`
+                `/word/${item.wordId}`
+                // typeof item.wordId === "number"
+                //   ? `/word/${slug}?id=${encodeURIComponent(String(item.wordId))}`
+                //   : `/word/${slug}`
               );
             }}
             onKeyDown={(e) => {

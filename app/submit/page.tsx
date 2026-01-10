@@ -407,7 +407,6 @@ export default function SubmitPage() {
   const [hashtagsRaw, setHashtagsRaw] = useState("");
 
   const [modal, setModal] = useState<ModalState>("none");
-  const [isNsfw, setIsNsfw] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAddingDefinition, setIsAddingDefinition] = useState(false);
   const [lastResponse, setLastResponse] = useState<SubmitWordResponse | null>(
@@ -424,7 +423,6 @@ export default function SubmitPage() {
     setSource("");
     setAlternateSpellingsRaw("");
     setHashtagsRaw("");
-    setIsNsfw(false);
   };
 
   const parseList = (raw: string) =>
@@ -545,7 +543,6 @@ export default function SubmitPage() {
           user: userId,
         },
         Source: source.trim(),
-        Category_yes: isNsfw,
         Alternate_spelllings: parseList(alternateSpellingsRaw),
         Hashtags: parseList(hashtagsRaw),
       },
@@ -753,39 +750,8 @@ export default function SubmitPage() {
               </div>
             </div>
 
-            {/* CATEGORY / NSFW TOGGLE – same pill height */}
-            <div className="relative">
-              {/* <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#00336E]">
-                Category
-              </div> */}
-              <div className={`${singleLineField} justify-between`}>
-                <span className="text-sm text-[#000000]">Category</span>
-                <div className="flex items-center gap-3 text-[12px] text-[#00336E]">
-                  <span className={!isNsfw ? "font-semibold" : "opacity-70"}>
-                    No
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsNsfw((v) => !v)}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${
-                      isNsfw ? "bg-[#00336E]" : "bg-[#d3e4ff]"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
-                        isNsfw ? "translate-x-5" : ""
-                      }`}
-                    />
-                  </button>
-                  <span className={isNsfw ? "font-semibold" : "opacity-70"}>
-                    Yes
-                  </span>
-                </div>
-              </div>
-            </div>
-
             {/* ALTERNATE SPELLINGS */}
-            <div className="relative">
+            <div className="relative md:col-span-2">
               <div className="absolute -top-3 left-6 bg-white px-2 text-[11px] font-semibold text-[#000000]">
                 Alternate Spellings
               </div>

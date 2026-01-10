@@ -24,6 +24,7 @@ export default function LoginPage() {
 
       // Store tokens and user info
       localStorage.setItem("accessToken", res.access);
+      document.cookie = `accessToken=${encodeURIComponent(res.access)}; Path=/; SameSite=Lax`;
       if (res.refresh) localStorage.setItem("refreshToken", res.refresh);
       localStorage.setItem("user", JSON.stringify({
         id: res.id,

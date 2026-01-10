@@ -156,7 +156,10 @@ export default function SignupPage() {
     id?: number;
     username?: string;
   }) => {
-    if (res.access) localStorage.setItem("accessToken", res.access);
+    if (res.access) {
+      localStorage.setItem("accessToken", res.access);
+      document.cookie = `accessToken=${encodeURIComponent(res.access)}; Path=/; SameSite=Lax`;
+    }
     if (res.refresh) localStorage.setItem("refreshToken", res.refresh);
     localStorage.setItem(
       "user",

@@ -33,6 +33,12 @@ type TrendingCard = {
   isHot: boolean;
 };
 
+const DISCOVER_TRENDING_CACHE_TTL_MS = 5 * 60 * 1000;
+const discoverTrendingCache = new Map<
+  string,
+  { ts: number; items: TrendingCard[] }
+>();
+
 function pickTopDefinition(defs?: TrendingApiDefinition[]) {
   const list = Array.isArray(defs) ? defs : [];
   const best = list
@@ -66,11 +72,6 @@ function categoryToApi(category: string) {
   return normalized;
 }
 
-function wordToSlug(word: string) {
-  const normalized = word.trim().replace(/\s+/g, "-");
-  return encodeURIComponent(normalized);
-}
-
 export const TrendingSection = ({
   timeframe,
   category,
@@ -86,11 +87,11 @@ export const TrendingSection = ({
   function navigateToWord(word: string, wordId?: number) {
     const trimmed = word.trim();
     if (!trimmed) return;
-    const slug = wordToSlug(trimmed);
     router.push(
-      typeof wordId === "number"
-        ? `/word/${slug}?id=${encodeURIComponent(String(wordId))}`
-        : `/word/${slug}`
+      `/word/${wordId}`
+      // typeof wordId === "number"
+      //   ? `/word/${slug}?id=${encodeURIComponent(String(wordId))}`
+      //   : `/word/${slug}`
     );
   }
 
@@ -116,9 +117,25 @@ export const TrendingSection = ({
 
   const badge = useMemo(() => timeframeToBadge(timeframe), [timeframe]);
 
+  const cacheKey = useMemo(() => {
+    const cat = categoryToApi(category);
+    return `${timeframeToDay(timeframe)}|${cat}`;
+  }, [timeframe, category]);
+
   useEffect(() => {
     let alive = true;
     const controller = new AbortController();
+
+    const cached = discoverTrendingCache.get(cacheKey);
+    if (cached && Date.now() - cached.ts < DISCOVER_TRENDING_CACHE_TTL_MS) {
+      setItems(cached.items);
+      setTrendingIndex(0);
+      setLoading(false);
+      return () => {
+        alive = false;
+        controller.abort();
+      };
+    }
 
     async function load() {
       try {
@@ -179,6 +196,8 @@ export const TrendingSection = ({
         if (!alive) return;
         setItems(mapped);
         setTrendingIndex(0);
+
+        discoverTrendingCache.set(cacheKey, { ts: Date.now(), items: mapped });
       } catch {
         if (!alive) return;
         setItems([]);
@@ -193,7 +212,7 @@ export const TrendingSection = ({
       alive = false;
       controller.abort();
     };
-  }, [timeframe, category, badge]);
+  }, [timeframe, category, badge, cacheKey]);
 
   const canSlide = items.length > 3;
   const visible = getVisibleItems(items, trendingIndex, 3);

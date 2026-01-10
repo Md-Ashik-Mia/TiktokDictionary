@@ -115,9 +115,10 @@ export const FastestGrowingSection = () => {
     if (!trimmed) return;
     const slug = wordToSlug(trimmed);
     router.push(
-      typeof wordId === "number"
-        ? `/word/${slug}?id=${encodeURIComponent(String(wordId))}`
-        : `/word/${slug}`
+      `/word/${wordId}`
+      // typeof wordId === "number"
+        // ? `/word/${slug}?id=${encodeURIComponent(String(wordId))}`
+        // : `/word/${slug}`
     );
   }
 

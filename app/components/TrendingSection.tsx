@@ -2,7 +2,7 @@
 
 import { api } from "@/lib/https";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AiOutlineLike } from "react-icons/ai";
 
 type TrendingTab = "today" | "week" | "month";
@@ -33,6 +33,9 @@ type TrendingCard = {
   period: TrendingTab;
 };
 
+const TRENDING_CACHE_TTL_MS = 5 * 60 * 1000;
+const trendingCache = new Map<TrendingTab, { ts: number; cards: TrendingCard[] }>();
+
 function pickTopDefinition(defs?: TrendingApiDefinition[]) {
   const list = Array.isArray(defs) ? defs : [];
   const best = list
@@ -50,20 +53,80 @@ function wordToSlug(word: string) {
 export const TrendingSection = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TrendingTab>("today");
-  const [remoteByTab, setRemoteByTab] = useState<
-    Partial<Record<TrendingTab, TrendingCard[]>>
-  >({});
+  const [cards, setCards] = useState<TrendingCard[]>([]);
   const [loading, setLoading] = useState(false);
+  const requestIdRef = useRef(0);
+
+  function isFresh(tab: TrendingTab) {
+    const cached = trendingCache.get(tab);
+    if (!cached) return false;
+    return Date.now() - cached.ts < TRENDING_CACHE_TTL_MS;
+  }
+
+  async function fetchTrending(tab: TrendingTab, signal?: AbortSignal) {
+    const cached = trendingCache.get(tab);
+    if (cached && Date.now() - cached.ts < TRENDING_CACHE_TTL_MS) {
+      return cached.cards;
+    }
+
+    const day = tab === "today" ? "1" : tab === "week" ? "7" : "30";
+    const res = await api.post<TrendingApiResponse>(
+      "dictionary/trendingwords/",
+      { day },
+      signal ? { signal } : undefined
+    );
+
+    const list = Array.isArray(res.data) ? res.data : [];
+    const nextCards = list
+      .map((item) => {
+        const likes = Number(item?.total_likes ?? 0);
+        const definition = pickTopDefinition(item?.definitions);
+        const word = String(item?.word ?? "").trim();
+        const category = String(item?.category ?? "Trending").trim() || "Trending";
+        return {
+          wordId: typeof item?.word_id === "number" ? item.word_id : undefined,
+          word,
+          rank: 0,
+          category,
+          definition,
+          likes,
+          period: tab,
+        } satisfies TrendingCard;
+      })
+      .filter((c) => c.word.length > 0)
+      .sort((a, b) => b.likes - a.likes)
+      .map((item, idx) => ({ ...item, rank: idx + 1 }));
+
+    trendingCache.set(tab, { ts: Date.now(), cards: nextCards });
+    return nextCards;
+  }
+
+  function prefetchOtherTabs(current: TrendingTab) {
+    const others: TrendingTab[] = ["today", "week", "month"].filter(
+      (t): t is TrendingTab => t !== current
+    );
+
+    // Prefetch only if missing/stale; do not touch UI loading state.
+    others.forEach((t) => {
+      if (isFresh(t)) return;
+      fetchTrending(t).catch(() => {
+        // ignore
+      });
+    });
+  }
 
   function navigateToWord(word: string, wordId?: number) {
-    const trimmed = word.trim();
-    if (!trimmed) return;
-    const slug = wordToSlug(trimmed);
-    router.push(
-      typeof wordId === "number"
-        ? `/word/${slug}?id=${encodeURIComponent(String(wordId))}`
-        : `/word/${slug}`
-    );
+    // const trimmed = word.trim();
+    // if (!trimmed) return;
+    // const slug = wordToSlug(trimmed);
+    // router.push(
+    //   typeof wordId === "number"
+    //     ? `/word/${slug}?id=${encodeURIComponent(String(wordId))}`
+    //     : `/word/${slug}`
+    // );
+
+    router.push(`/word/${wordId}`)
+
   }
 
   const tabs = [
@@ -73,45 +136,39 @@ export const TrendingSection = () => {
   ];
 
   useEffect(() => {
-    const day = activeTab === "today" ? "1" : activeTab === "week" ? "7" : "30";
     const controller = new AbortController();
+    const requestId = ++requestIdRef.current;
+
+    const cached = trendingCache.get(activeTab);
+    if (cached && Date.now() - cached.ts < TRENDING_CACHE_TTL_MS) {
+      setCards(cached.cards);
+      setLoading(false);
+      // Still prefetch others to keep navigation snappy.
+      prefetchOtherTabs(activeTab);
+      return;
+    }
 
     async function load() {
       setLoading(true);
+      // No caching: clear old tab results immediately.
+      setCards([]);
       try {
-        const res = await api.post<TrendingApiResponse>(
-          "dictionary/trendingwords/",
-          { day },
-          { signal: controller.signal }
-        );
+        const nextCards = await fetchTrending(activeTab, controller.signal);
 
-        const list = Array.isArray(res.data) ? res.data : [];
-        const cards = list
-          .map((item) => {
-            const likes = Number(item?.total_likes ?? 0);
-            const definition = pickTopDefinition(item?.definitions);
-            const word = String(item?.word ?? "").trim();
-            const category = String(item?.category ?? "Trending").trim() || "Trending";
-            return {
-              wordId: typeof item?.word_id === "number" ? item.word_id : undefined,
-              word,
-              rank: 0,
-              category,
-              definition,
-              likes,
-              period: activeTab,
-            } satisfies TrendingCard;
-          })
-          .filter((c) => c.word.length > 0)
-          .sort((a, b) => b.likes - a.likes)
-          .map((item, idx) => ({ ...item, rank: idx + 1 }));
+        // Prevent late responses from overwriting the current tab.
+        if (controller.signal.aborted) return;
+        if (requestId !== requestIdRef.current) return;
+        setCards(nextCards);
 
-        setRemoteByTab((prev) => ({ ...prev, [activeTab]: cards }));
+        prefetchOtherTabs(activeTab);
       } catch {
         if (controller.signal.aborted) return;
-        setRemoteByTab((prev) => ({ ...prev, [activeTab]: [] }));
+        if (requestId !== requestIdRef.current) return;
+        setCards([]);
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (controller.signal.aborted) return;
+        if (requestId !== requestIdRef.current) return;
+        setLoading(false);
       }
     }
 
@@ -119,7 +176,7 @@ export const TrendingSection = () => {
     return () => controller.abort();
   }, [activeTab]);
 
-  const filteredData = remoteByTab[activeTab] ?? [];
+  const filteredData = cards;
 
   return (
     <div className="w-full">

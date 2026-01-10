@@ -173,9 +173,13 @@ export const SubcultureSection = () => {
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {words.map((item) => (
+        {words.map((item, index) => (
           <article
-            key={item.word}
+            key={
+              typeof item.id === "number"
+                ? `subculture-${item.id}`
+                : `subculture-${item.word}-${item.tag}-${index}`
+            }
             className="rounded-[24px] border border-[#00336E] bg-white p-6 flex flex-col justify-between min-h-[140px] hover:shadow-md transition-all cursor-pointer"
             role="link"
             tabIndex={0}
@@ -185,9 +189,10 @@ export const SubcultureSection = () => {
               const slug = trimmed.replace(/\s+/g, "-");
               const encodedSlug = encodeURIComponent(slug);
               router.push(
-                typeof item.id === "number"
-                  ? `/word/${encodedSlug}?id=${encodeURIComponent(String(item.id))}`
-                  : `/word/${encodedSlug}`
+                `/word/${item.id}`
+                // typeof item.id === "number"
+                //   ? `/word/${encodedSlug}?id=${encodeURIComponent(String(item.id))}`
+                //   : `/word/${encodedSlug}`
               );
             }}
             onKeyDown={(e) => {
@@ -198,9 +203,10 @@ export const SubcultureSection = () => {
                 const slug = trimmed.replace(/\s+/g, "-");
                 const encodedSlug = encodeURIComponent(slug);
                 router.push(
-                  typeof item.id === "number"
-                    ? `/word/${encodedSlug}?id=${encodeURIComponent(String(item.id))}`
-                    : `/word/${encodedSlug}`
+                  `/word/${item.id}`
+                  // typeof item.id === "number"
+                  //   ? `/word/${encodedSlug}?id=${encodeURIComponent(String(item.id))}`
+                  //   : `/word/${encodedSlug}`
                 );
               }
             }}
