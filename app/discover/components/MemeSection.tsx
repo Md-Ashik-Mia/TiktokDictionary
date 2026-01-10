@@ -126,7 +126,7 @@ export const MemeSection = () => {
     <section className="bg-[#EFF6FE] py-16">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <h2 className="font-display font-bold text-4xl sm:text-5xl md:text-[3.2rem] leading-none text-[#00336E]">
+          <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-[2.2rem] leading-none text-[#00336E]">
             Meme Words Of The Week
           </h2>
           <div className="flex items-center gap-2">
