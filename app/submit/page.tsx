@@ -341,7 +341,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { api, userApi } from "@/lib/https";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
 import { FiChevronDown } from "react-icons/fi";
 import { MdArrowOutward, MdCelebration } from "react-icons/md";
@@ -391,6 +391,17 @@ type ExistingDefinitionDetails = {
   dislikes: number;
 };
 
+type ApiCategory = {
+  id: number;
+  name: string;
+  total_words?: number;
+};
+
+type AllCategoriesResponse = {
+  count: number;
+  categories: ApiCategory[];
+};
+
 // shared pill style for all single-line fields
 const singleLineField =
   "border border-[#00336E] rounded-[24px] px-5 h-[56px] bg-white flex items-center";
@@ -402,6 +413,7 @@ export default function SubmitPage() {
   const [definition, setDefinition] = useState("");
   const [exampleSentence, setExampleSentence] = useState("");
   const [categoryName, setCategoryName] = useState("Slang");
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [source, setSource] = useState("");
   const [alternateSpellingsRaw, setAlternateSpellingsRaw] = useState("");
   const [hashtagsRaw, setHashtagsRaw] = useState("");
@@ -414,6 +426,51 @@ export default function SubmitPage() {
   );
   const [existingWordId, setExistingWordId] = useState<number | null>(null);
   const [existingDetails, setExistingDetails] = useState<ExistingDefinitionDetails | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const controller = new AbortController();
+
+    async function loadCategories() {
+      try {
+        const res = await api.get<AllCategoriesResponse>(
+          "dictionary/allcategories/",
+          { signal: controller.signal }
+        );
+        const raw = res.data?.categories ?? [];
+
+        const seen = new Set<string>();
+        const unique: ApiCategory[] = [];
+        for (const c of raw) {
+          const name = typeof c?.name === "string" ? c.name.trim() : "";
+          if (!name) continue;
+          const key = name.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          unique.push({ id: c.id, name, total_words: c.total_words });
+        }
+
+        if (!alive) return;
+        setCategories(unique);
+        setCategoryName((prev) => {
+          const prevKey = prev.trim().toLowerCase();
+          if (prevKey && unique.some((c) => c.name.toLowerCase() === prevKey)) return prev;
+
+          const slang = unique.find((c) => c.name.trim().toLowerCase() === "slang")?.name;
+          return slang ?? unique[0]?.name ?? prev;
+        });
+      } catch {
+        if (!alive) return;
+        setCategories([]);
+      }
+    }
+
+    loadCategories();
+    return () => {
+      alive = false;
+      controller.abort();
+    };
+  }, []);
 
   const resetForm = () => {
     setWord("");
@@ -430,18 +487,6 @@ export default function SubmitPage() {
       .split(/[\n,]/g)
       .map((s) => s.trim())
       .filter(Boolean);
-
-  const getUserIdFromStorage = () => {
-    if (typeof window === "undefined") return null;
-    const userStr = localStorage.getItem("user");
-    if (!userStr) return null;
-    try {
-      const user = JSON.parse(userStr) as { id?: number };
-      return typeof user.id === "number" ? user.id : null;
-    } catch {
-      return null;
-    }
-  };
 
   const slugifyWord = (w: string) =>
     encodeURIComponent(w.trim().toLowerCase().replace(/\s+/g, "-"));
@@ -529,19 +574,17 @@ export default function SubmitPage() {
       }
     }
 
-    const userId = getUserIdFromStorage();
-    if (!userId) {
-      router.push("/login");
-      return;
-    }
+    const selectedCategoryId =
+      categories.find(
+        (c) => c.name.trim().toLowerCase() === categoryName.trim().toLowerCase()
+      )?.id ?? categories[0]?.id;
+
+    if (typeof selectedCategoryId !== "number") return;
 
     const payload = {
       dictionary: {
         word: wordValue,
-        Category: {
-          name: categoryName.trim().toLowerCase(),
-          user: userId,
-        },
+        Category: selectedCategoryId,
         Source: source.trim(),
         Alternate_spelllings: parseList(alternateSpellingsRaw),
         Hashtags: parseList(hashtagsRaw),
@@ -721,12 +764,23 @@ export default function SubmitPage() {
                 <select
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
-                  className="w-full bg-transparent text-sm outline-none appearance-none pr-6 text-[#00336E] placeholder:text-[#9D9D9D] border-none"
+                  className="w-full bg-white text-sm outline-none appearance-none pr-6 text-[#00336E] placeholder:text-[#9D9D9D] border-none"
                 >
-                  <option>Slang</option>
-                  <option>TikTok Trends</option>
-                  <option>Meme</option>
-                  <option>Audio Sounds</option>
+                  {categories.length === 0 ? (
+                    <option value={categoryName} style={{ color: "#00336E", backgroundColor: "#ffffff" }}>
+                      Loading categories...
+                    </option>
+                  ) : (
+                    categories.map((c) => (
+                      <option
+                        key={c.id}
+                        value={c.name}
+                        style={{ color: "#00336E", backgroundColor: "#ffffff" }}
+                      >
+                        {c.name}
+                      </option>
+                    ))
+                  )}
                 </select>
 
                 {/* small chevron icon on the right */}

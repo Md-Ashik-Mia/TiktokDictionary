@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { IoIosArrowDropleft, IoIosArrowDropright } from "react-icons/io";
 import { LuHandshake } from "react-icons/lu";
 
-type Timeframe = "today" | "week" | "month";
+type Timeframe = "today" | "week" | "month" | "year";
 
 type TrendingApiDefinition = {
   definition_id?: number;
@@ -51,33 +51,23 @@ function pickTopDefinition(defs?: TrendingApiDefinition[]) {
 function timeframeToDay(tf: Timeframe) {
   if (tf === "today") return "1";
   if (tf === "week") return "7";
-  return "30";
+  if (tf === "month") return "30";
+  return "365";
 }
 
 function timeframeToBadge(tf: Timeframe) {
   if (tf === "today") return "Trending Today";
   if (tf === "week") return "Trending This Week";
-  return "Trending This Month";
-}
-
-function categoryToApi(category: string) {
-  const normalized = category.trim().toLowerCase().replace(/\s+/g, "_");
-  if (!normalized) return "";
-  if (normalized.endsWith("ies") && normalized.length > 3) {
-    return `${normalized.slice(0, -3)}y`;
-  }
-  if (normalized.endsWith("s") && !normalized.endsWith("ss") && normalized.length > 1) {
-    return normalized.slice(0, -1);
-  }
-  return normalized;
+  if (tf === "month") return "Trending This Month";
+  return "Trending This Year";
 }
 
 export const TrendingSection = ({
   timeframe,
-  category,
+  categoryId,
 }: {
   timeframe: Timeframe;
-  category: string;
+  categoryId?: number;
 }) => {
   const router = useRouter();
   const [trendingIndex, setTrendingIndex] = useState(0);
@@ -118,9 +108,8 @@ export const TrendingSection = ({
   const badge = useMemo(() => timeframeToBadge(timeframe), [timeframe]);
 
   const cacheKey = useMemo(() => {
-    const cat = categoryToApi(category);
-    return `${timeframeToDay(timeframe)}|${cat}`;
-  }, [timeframe, category]);
+    return `${timeframeToDay(timeframe)}|${String(categoryId ?? "")}`;
+  }, [timeframe, categoryId]);
 
   useEffect(() => {
     let alive = true;
@@ -140,7 +129,7 @@ export const TrendingSection = ({
     async function load() {
       try {
         setLoading(true);
-        if (!category.trim()) {
+        if (typeof categoryId !== "number") {
           if (!alive) return;
           setItems([]);
           setTrendingIndex(0);
@@ -151,7 +140,7 @@ export const TrendingSection = ({
           "dictionary/trendingwords/",
           {
             day: timeframeToDay(timeframe),
-            category: categoryToApi(category),
+            category: categoryId,
           },
           { signal: controller.signal }
         );
@@ -212,7 +201,7 @@ export const TrendingSection = ({
       alive = false;
       controller.abort();
     };
-  }, [timeframe, category, badge, cacheKey]);
+  }, [timeframe, categoryId, badge, cacheKey]);
 
   const canSlide = items.length > 3;
   const visible = getVisibleItems(items, trendingIndex, 3);

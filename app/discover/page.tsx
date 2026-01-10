@@ -24,13 +24,13 @@ type AllCategoriesResponse = {
   categories: ApiCategory[];
 };
 
-type Timeframe = "today" | "week" | "month";
+type Timeframe = "today" | "week" | "month" | "year";
 
 export default function DiscoverPage() {
   const [timeframe, setTimeframe] = useState<Timeframe>("today");
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
   // Default to Slang on initial visit.
-  const [category, setCategory] = useState<string>("Slang");
+  const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     let alive = true;
@@ -46,30 +46,29 @@ export default function DiscoverPage() {
 
         // Deduplicate by case-insensitive name.
         const seen = new Set<string>();
-        const names: string[] = [];
+        const unique: ApiCategory[] = [];
         for (const c of raw) {
           const name = typeof c?.name === "string" ? c.name.trim() : "";
           if (!name) continue;
           const key = name.toLowerCase();
           if (seen.has(key)) continue;
           seen.add(key);
-          names.push(name);
+          unique.push({ id: c.id, name, total_words: c.total_words });
         }
 
         if (!alive) return;
-        setCategories(names);
-        setCategory((prev) => {
-          const prevKey = prev.trim().toLowerCase();
-          if (prevKey && names.some((n) => n.toLowerCase() === prevKey)) return prev;
+        setCategories(unique);
+        setCategoryId((prev) => {
+          if (typeof prev === "number" && unique.some((c) => c.id === prev)) return prev;
 
           // Prefer "Slang" if the backend provides it (any casing).
-          const slang = names.find((n) => n.trim().toLowerCase() === "slang");
-          return slang ?? names[0] ?? "";
+          const slangId = unique.find((c) => c.name.trim().toLowerCase() === "slang")?.id;
+          return typeof slangId === "number" ? slangId : unique[0]?.id;
         });
       } catch {
         if (!alive) return;
         setCategories([]);
-        setCategory("Slang");
+        setCategoryId(undefined);
       }
     }
 
@@ -88,11 +87,14 @@ export default function DiscoverPage() {
         <FilterSection
           timeframe={timeframe}
           onTimeframeChange={setTimeframe}
-          category={category}
-          onCategoryChange={setCategory}
+          categoryId={categoryId}
+          onCategoryChange={setCategoryId}
           categories={categories}
         />
-        <TrendingSection timeframe={timeframe} category={category} />
+        <TrendingSection
+          timeframe={timeframe}
+          categoryId={categoryId}
+        />
         <FastestGrowingSection />
         <ControversialSection />
         <MemeSection />

@@ -2,22 +2,26 @@
 
 import { FiChevronDown } from "react-icons/fi";
 
-type Timeframe = "today" | "week" | "month";
+type Timeframe = "today" | "week" | "month" | "year";
+
+type ApiCategory = {
+  id: number;
+  name: string;
+};
 
 export const FilterSection = ({
   timeframe,
   onTimeframeChange,
-  category,
+  categoryId,
   onCategoryChange,
   categories,
 }: {
   timeframe: Timeframe;
   onTimeframeChange: (value: Timeframe) => void;
-  category: string;
-  onCategoryChange: (value: string) => void;
-  categories: string[];
+  categoryId?: number;
+  onCategoryChange: (value?: number) => void;
+  categories: ApiCategory[];
 }) => {
-
   return (
     <div className="max-w-6xl mx-auto px-6">
       <div className="flex flex-col md:flex-row gap-6">
@@ -34,6 +38,7 @@ export const FilterSection = ({
               <option value="today">Today</option>
               <option value="week">This Week</option>
               <option value="month">This Month</option>
+              <option value="year">This Year</option>
             </select>
             <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#00336E]" />
           </div>
@@ -44,8 +49,12 @@ export const FilterSection = ({
           </label>
           <div className="relative">
             <select
-              value={category}
-              onChange={(e) => onCategoryChange(e.target.value)}
+              value={categoryId ?? ""}
+              onChange={(e) => {
+                const raw = e.target.value;
+                const parsed = raw ? Number(raw) : NaN;
+                onCategoryChange(Number.isFinite(parsed) ? parsed : undefined);
+              }}
               className="w-full appearance-none bg-white border border-[#00336E] rounded-[15px] px-4 py-3.5 text-sm text-[#00336E] outline-none cursor-pointer shadow-sm focus:ring-2 focus:ring-[#00336E]/10"
             >
               {categories.length === 0 ? (
@@ -54,8 +63,8 @@ export const FilterSection = ({
                 </option>
               ) : (
                 categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name}
                   </option>
                 ))
               )}
